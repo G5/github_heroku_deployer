@@ -1,4 +1,6 @@
 require "heroku_app_deployer/configuration"
+require "heroku_app_deployer/git"
+require "heroku_app_deployer/heroku"
 require "heroku_app_deployer/version"
 
 module HerokuAppDeployer
@@ -32,55 +34,20 @@ module HerokuAppDeployer
     end
 
     def deploy
-      find_or_create_remote_app
-      deploy_remote_app
-      add_deployhooks_http
+      heroku.find_or_create_app
+      git.push_app_to_heroku
+      heroku.add_deployhooks_http
+      # TODO: return useful stuff and things
     end
 
+    # TODO: is this going to fly?
     def heroku
-      @heroku ||= Heroku::API.new(api_key: configuration["heroku_api_key"])
+      @heroku ||= Heroku.new(configuration)
     end
 
-    def find_or_create_remote_app
-      find_app || create_remote_app
+    def git
+      @git ||= Git.new(configuration)
     end
-
-    def find_app
-      heroku.get_app(name)
-    end
-
-    def create_remote_app
-      heroku.post_app(name: configuration["heroku_app_name"])
-    end
-
-    def deploy_remote_app
-      Typhoeus::Request.get(
-        configuration["deployer_url"],
-        params: {
-          heroku_repo: configuration["heroku_repo"]
-          github_repo: configuration["github_repo"]
-        })
-    end
-
-    # def delete_remote_app
-    #   heroku.delete_app(configuration["heroku_app_name"])
-    # end
-
-    def add_deployhooks_http
-      add_addon("deployhooks:http", url: configuration["deployhooks_http_url"])
-    end
-
-    def add_addon(addon, options={})
-      heroku.post_addon(configuration["heroku_app_name"], addon, options)
-    end
-
-    # def delete_addon(addon)
-    #   heroku.delete_addon(configuration["heroku_app_name"], addon)
-    # end
-
-    # def migrate
-    #   heroku.post_ps(configuration["heroku_app_name"], "rake db:migrate")
-    # end
 
   end # class << self
 end
