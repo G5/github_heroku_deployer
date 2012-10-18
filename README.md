@@ -34,15 +34,29 @@ gem install heroku_app_deployer
 
 ## Usage
 
-Set defaults in an initializer.
+Set defaults in an initializer, defaults are shown:
 
 ```ruby
 HerokuAppDeployer.configure do |config|
+  config.deployhooks_http_url = ENV["DEPLOYHOOKS_HTTP_URL"]
   config.heroku_username = ENV["HEROKU_USERNAME"]
   config.heroku_api_key = ENV["HEROKU_API_KEY"]
   config.github_repo = ENV["GITHUB_REPO"]
   config.heroku_repo = ENV["HEROKU_REPO"]
+  config.heroku_app_name = ENV=["HEROKU_APP_NAME"]
 end
+```
+
+Deploy:
+
+```ruby
+  HerokuAppDeployer.deploy
+```
+
+TODO Override defaults:
+
+```ruby
+  HerokuAppDeployer.deploy(github_repo: github_repo)
 ```
 
 

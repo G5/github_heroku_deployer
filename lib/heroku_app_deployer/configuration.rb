@@ -1,17 +1,24 @@
 module HerokuAppDeployer
   class Configuration
     OPTIONS = [
-      :heroku_username,
-      :heroku_api_key,
+      :deployhooks_http_url,
       :github_repo,
+      :heroku_api_key,
+      :heroku_app_name,
       :heroku_repo,
+      :heroku_username,
     ]
 
+    # Defines accessors for all OPTIONS
     OPTIONS.each do |option|
       attr_accessor option
     end
 
+    # Initializes defaults to be the environment varibales of the same names
     def initialize
+      OPTIONS.each do |option|
+        self.send("#{option}=", ENV[option.upcase])
+      end
     end
 
     # Allows config options to be read like a hash
