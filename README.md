@@ -34,7 +34,16 @@ gem install heroku_app_deployer
 
 ## Usage
 
-TODO
+Set defaults in an initializer.
+
+```ruby
+HerokuAppDeployer.configure do |config|
+  config.heroku_username = ENV["HEROKU_USERNAME"]
+  config.heroku_api_key = ENV["HEROKU_API_KEY"]
+  config.github_repo = ENV["GITHUB_REPO"]
+  config.heroku_repo = ENV["HEROKU_REPO"]
+end
+```
 
 
 ## Authors

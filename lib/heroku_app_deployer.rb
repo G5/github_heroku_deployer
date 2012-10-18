@@ -19,11 +19,14 @@ module HerokuAppDeployer
     #
     # @example
     #   HerokuAppDeployer.configure do |config|
-    #     config.user_agent = "HerokuAppDeployer"
+    #     config.heroku_username = ENV["HEROKU_USERNAME"]
+    #     config.heroku_api_key = ENV["HEROKU_API_KEY"]
+    #     config.github_repo = ENV["GITHUB_REPO"]
+    #     config.heroku_repo = ENV["HEROKU_REPO"]
     #   end
     def configure
       yield(configuration)
     end
-  end
 
+  end # class << self
 end
