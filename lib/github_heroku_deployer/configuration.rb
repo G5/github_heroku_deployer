@@ -1,4 +1,4 @@
-module HerokuAppDeployer
+module GithubHerokuDeployer
   class Configuration
     OPTIONS = [
       :github_repo,

@@ -1,4 +1,4 @@
-# Heroku App Deployer
+# Github Heroku Deployer
 
 Ruby gem to deploy repos to Heroku.
 
@@ -22,7 +22,7 @@ Ruby gem to deploy repos to Heroku.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'heroku_app_deployer'
+gem 'github_heroku_deployer'
 ```
 
 ### Manual
@@ -30,7 +30,7 @@ gem 'heroku_app_deployer'
 Or install it yourself:
 
 ```bash
-gem install heroku_app_deployer
+gem install github_heroku_deployer
 ```
 
 
@@ -39,7 +39,7 @@ gem install heroku_app_deployer
 Set defaults in an initializer, defaults are shown:
 
 ```ruby
-HerokuAppDeployer.configure do |config|
+GithubHerokuDeployer.configure do |config|
   config.github_repo     = ENV["GITHUB_REPO"]
   config.heroku_api_key  = ENV["HEROKU_API_KEY"]
   config.heroku_app_name = ENV["HEROKU_APP_NAME"]
@@ -61,13 +61,13 @@ export GITHUB_REPO=git@github.com:your/repo.git
 Deploy:
 
 ```ruby
-  HerokuAppDeployer.deploy
+  GithubHerokuDeployer.deploy
 ```
 
 TODO Override defaults:
 
 ```ruby
-  HerokuAppDeployer.deploy(github_repo: github_repo)
+  GithubHerokuDeployer.deploy(github_repo: github_repo)
 ```
 
 
@@ -87,7 +87,7 @@ TODO Override defaults:
 7. Create new Pull Request
 
 If you find bugs, have feature requests or questions, please
-[file an issue](https://github.com/G5/heroku_app_deployer/issues).
+[file an issue](https://github.com/G5/github_heroku_deployer/issues).
 
 
 ## License

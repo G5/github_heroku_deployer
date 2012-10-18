@@ -1,19 +1,19 @@
-require "heroku_app_deployer/configuration"
-require "heroku_app_deployer/git"
-require "heroku_app_deployer/heroku"
-require "heroku_app_deployer/version"
+require "github_heroku_deployer/configuration"
+require "github_heroku_deployer/git"
+require "github_heroku_deployer/heroku"
+require "github_heroku_deployer/version"
 
-module HerokuAppDeployer
+module GithubHerokuDeployer
   class << self
-    # A HerokuAppDeployer configuration object. Must act like a hash and return sensible
-    # values for all HerokuAppDeployer configuration options.
+    # A GithubHerokuDeployer configuration object. Must act like a hash and 
+    # return sensible values for all GithubHerokuDeployer configuration options.
     #
-    # @see HerokuAppDeployer::Configuration.
+    # @see GithubHerokuDeployer::Configuration.
     attr_writer :configuration
 
     # The configuration object.
     #
-    # @see HerokuAppDeployer.configure
+    # @see GithubHerokuDeployer.configure
     def configuration
       @configuration ||= Configuration.new
     end

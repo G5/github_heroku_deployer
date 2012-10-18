@@ -1,4 +1,4 @@
-module HerokuAppDeployer
+module GithubHerokuDeployer
   class Heroku
 
     def initialize(configuration)
