@@ -1,3 +1,5 @@
+require "heroku-api"
+
 module GithubHerokuDeployer
   class Heroku
 
