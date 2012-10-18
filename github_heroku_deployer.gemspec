@@ -10,12 +10,14 @@ Gem::Specification.new do |gem|
   gem.summary       = %q{Deploys Github repos to Heroku}
   gem.homepage      = ""
 
-  gem.add_runtime_dependency "heroku-api", "~> 0.3.5"
-  gem.add_runtime_dependency "git", "~> 1.2.5"
-  gem.add_runtime_dependency "git-ssh-wrapper", "~> 0.1.0"
-
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
+
+  gem.add_runtime_dependency "heroku-api", "~> 0.3.5"
+  gem.add_runtime_dependency "git", "~> 1.2.5"
+  gem.add_runtime_dependency "git-ssh-wrapper", "~> 0.1.0"
+
+  gem.add_development_dependency "rspec", "~> 2.11.0"
 end
