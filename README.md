@@ -12,7 +12,7 @@ Ruby gem to deploy repos to Heroku.
 
 * ["heroku_api", "~> 0.3.5"](http://rubygems.org/gems/heroku-api)
 * ["git", "~> 1.2.5"](http://rubygems.org/gems/git)
-* ["sshkey", "~> 1.3.1"](http://rubygems.org/gems/sshkey)
+* ["git-ssh-wrapper", "~> 0.1.0"](http://rubygems.org/gems/git-ssh-wrapper)
 
 
 ## Installation

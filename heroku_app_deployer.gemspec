@@ -12,7 +12,7 @@ Gem::Specification.new do |gem|
 
   gem.add_runtime_dependency "heroku-api", "~> 0.3.5"
   gem.add_runtime_dependency "git", "~> 1.2.5"
-  gem.add_runtime_dependency "sshkey", "~> 1.3.1"
+  gem.add_runtime_dependency "git-ssh-wrapper", "~> 0.1.0"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
