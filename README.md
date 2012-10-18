@@ -10,7 +10,9 @@ Ruby gem to deploy repos to Heroku.
 
 ## Requirements
 
-* [heroku_api, ~> 0.3.5](http://rubygems.org/gems/heroku-api)
+* ["heroku_api", "~> 0.3.5"](http://rubygems.org/gems/heroku-api)
+* ["git", "~> 1.2.5"](http://rubygems.org/gems/git)
+* ["sshkey", "~> 1.3.1"](http://rubygems.org/gems/sshkey)
 
 
 ## Installation
@@ -25,7 +27,7 @@ gem 'heroku_app_deployer'
 
 ### Manual
 
-Or install it yourself as:
+Or install it yourself:
 
 ```bash
 gem install heroku_app_deployer
