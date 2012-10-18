@@ -9,7 +9,7 @@ module GithubHerokuDeployer
     end
 
     def heroku
-      @heroku ||= Heroku::API.new(api_key: @heroku_api_key)
+      @heroku ||= ::Heroku::API.new(api_key: @heroku_api_key)
     end
 
     def app
@@ -21,7 +21,7 @@ module GithubHerokuDeployer
     end
 
     def find_app
-      heroku.get_app(name)
+      heroku.get_app(@heroku_app_name)
     end
 
     def create_app

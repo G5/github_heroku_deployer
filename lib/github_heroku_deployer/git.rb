@@ -18,13 +18,13 @@ module GithubHerokuDeployer
       local_folder = "repos/#{Zlib.crc32(@github_repo)}"
 
       repo = begin
-        Git.open(local_folder).tap do |g|
+        ::Git.open(local_folder).tap do |g|
           g.fetch
           g.remote("origin").merge
         end
       rescue ArgumentError => e
         `rm -r #{local_folder}`
-        wrapped_clone(@github_repo, local_folder)
+        wrapped_clone(local_folder)
         retry
       end
       repo.add_remote("heroku", @heroku_repo) unless repo.remote("heroku").url
