@@ -2,7 +2,6 @@ require "git"
 require "git-ssh-wrapper"
 
 module HerokuAppDeployer
-module GitHubToHerokuDeployer
   class Git
 
     def initialize(configuration)
