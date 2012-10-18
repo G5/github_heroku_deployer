@@ -4,7 +4,6 @@ module HerokuAppDeployer
     def initialize(configuration)
       @heroku_api_key = configuration["heroku_api_key"]
       @heroku_app_name = configuration["heroku_app_name"]
-      @deployhooks_http_url = configuration["deployhooks_http_url"]
     end
 
     def heroku
@@ -31,13 +30,13 @@ module HerokuAppDeployer
     #   heroku.delete_app(@heroku_app_name)
     # end
 
-    def add_deployhooks_http
-      add_addon("deployhooks:http", url: @deployhooks_http_url)
-    end
+    # def add_deployhooks_http(url)
+    #   add_addon("deployhooks:http", url: url)
+    # end
 
-    def add_addon(addon, options={})
-      heroku.post_addon(@heroku_app_name, addon, options)
-    end
+    # def add_addon(addon, options={})
+    #   heroku.post_addon(@heroku_app_name, addon, options)
+    # end
 
     # def delete_addon(addon)
     #   heroku.delete_addon(@heroku_app_name, addon)

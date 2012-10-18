@@ -21,13 +21,11 @@ module HerokuAppDeployer
     # Call this method to modify defaults in your initializers.
     #
     # @example
-    #   HerokuAppDeployer.configure do |config|
-    #     config.deployhooks_http_url = ENV["DEPLOYHOOKS_HTTP_URL"]
+    #     config.github_repo     = ENV["GITHUB_REPO"]
+    #     config.heroku_api_key  = ENV["HEROKU_API_KEY"]
+    #     config.heroku_app_name = ENV["HEROKU_APP_NAME"]
+    #     config.heroku_repo     = ENV["HEROKU_REPO"]
     #     config.heroku_username = ENV["HEROKU_USERNAME"]
-    #     config.heroku_api_key = ENV["HEROKU_API_KEY"]
-    #     config.github_repo = ENV["GITHUB_REPO"]
-    #     config.heroku_repo = ENV["HEROKU_REPO"]
-    #     config.heroku_app_name = ENV=["HEROKU_APP_NAME"]
     #   end
     def configure
       yield(configuration)
@@ -36,17 +34,15 @@ module HerokuAppDeployer
     def deploy
       heroku.find_or_create_app
       git.push_app_to_heroku
-      heroku.add_deployhooks_http
-      # TODO: return useful stuff and things
+      # TODO what to return?
     end
 
-    # TODO: is this going to fly?
     def heroku
-      @heroku ||= Heroku.new(configuration)
+      Heroku.new(configuration)
     end
 
     def git
-      @git ||= Git.new(configuration)
+      Git.new(configuration)
     end
 
   end # class << self

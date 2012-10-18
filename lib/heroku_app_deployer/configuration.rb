@@ -1,7 +1,6 @@
 module HerokuAppDeployer
   class Configuration
     OPTIONS = [
-      :deployhooks_http_url,
       :github_repo,
       :heroku_api_key,
       :heroku_app_name,
@@ -17,7 +16,7 @@ module HerokuAppDeployer
     # Initializes defaults to be the environment varibales of the same names
     def initialize
       OPTIONS.each do |option|
-        self.send("#{option}=", ENV[option.upcase])
+        self.send("#{option}=", ENV[option.to_s.upcase])
       end
     end
 

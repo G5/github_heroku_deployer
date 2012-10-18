@@ -40,13 +40,22 @@ Set defaults in an initializer, defaults are shown:
 
 ```ruby
 HerokuAppDeployer.configure do |config|
-  config.deployhooks_http_url = ENV["DEPLOYHOOKS_HTTP_URL"]
+  config.github_repo     = ENV["GITHUB_REPO"]
+  config.heroku_api_key  = ENV["HEROKU_API_KEY"]
+  config.heroku_app_name = ENV["HEROKU_APP_NAME"]
+  config.heroku_repo     = ENV["HEROKU_REPO"]
   config.heroku_username = ENV["HEROKU_USERNAME"]
-  config.heroku_api_key = ENV["HEROKU_API_KEY"]
-  config.github_repo = ENV["GITHUB_REPO"]
-  config.heroku_repo = ENV["HEROKU_REPO"]
-  config.heroku_app_name = ENV=["HEROKU_APP_NAME"]
 end
+```
+
+Export you environment variables wherever you do that:
+
+```bash
+export HEROKU_USERNAME=heroku_username
+export HEROKU_API_KEY=heroku_api_key
+export HEROKU_APP_NAME=heroku_app_name
+export HEROKU_REPO=git@heroku.com:repo.git
+export GITHUB_REPO=git@github.com:your/repo.git
 ```
 
 Deploy:
