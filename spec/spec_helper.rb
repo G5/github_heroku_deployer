@@ -1,2 +1,5 @@
 require 'rubygems'
-require 'hentry_consumer'
+
+RSpec.configure do |config|
+  config.color = true
+end

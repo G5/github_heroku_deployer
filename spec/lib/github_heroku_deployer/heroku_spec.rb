@@ -1,16 +1,25 @@
+require 'spec_helper'
 require 'github_heroku_deployer/heroku'
 
 describe GithubHerokuDeployer::Heroku do
-  # it { should respond_to :configuration }
-  # it { should respond_to :configure }
-  # it { should respond_to :deploy }
+  # it { should respond_to :heroku }
+  # it { should respond_to :app }
+  # it { should respond_to :find_or_create_app }
+  # it { should respond_to :find_app }
+  # it { should respond_to :create_app }
   
-  describe "configuration" do
+  describe "heroku" do
   end
 
-  describe "configure" do
+  describe "app" do
   end
 
-  describe "deploy" do
+  describe "find_or_create_app" do
+  end
+
+  describe "find_app" do
+  end
+
+  describe "create_app" do
   end
 end
