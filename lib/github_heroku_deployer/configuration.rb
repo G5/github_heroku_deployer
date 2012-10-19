@@ -42,5 +42,13 @@ module GithubHerokuDeployer
     def merge(hash)
       to_hash.merge(hash)
     end
+
+    def check_requirements
+      OPTIONS.each do |option|
+        if send(option).nil? || send(option).empty?
+          raise GithubHerokuDeployer::ConfigurationException, "#{option} is missing"
+        end
+      end
+    end
   end
 end

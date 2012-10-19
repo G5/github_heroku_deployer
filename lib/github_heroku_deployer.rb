@@ -1,3 +1,4 @@
+require "github_heroku_deployer/exceptions"
 require "github_heroku_deployer/configuration"
 require "github_heroku_deployer/git"
 require "github_heroku_deployer/heroku"
@@ -21,6 +22,7 @@ module GithubHerokuDeployer
     # Call this method to modify defaults in your initializers.
     #
     # @example
+    #   GithubHerokuDeployer.configure do |config|
     #     config.github_repo     = ENV["GITHUB_REPO"]
     #     config.heroku_api_key  = ENV["HEROKU_API_KEY"]
     #     config.heroku_app_name = ENV["HEROKU_APP_NAME"]
@@ -32,9 +34,10 @@ module GithubHerokuDeployer
     end
 
     def deploy
+      configuration.check_requirements
       heroku.find_or_create_app
       git.push_app_to_heroku
-      # TODO what to return?
+      true
     end
 
     def heroku
