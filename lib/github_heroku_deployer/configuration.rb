@@ -1,6 +1,7 @@
 module GithubHerokuDeployer
   class Configuration
     OPTIONS = [
+      :ssh_enabled,
       :github_repo,
       :heroku_api_key,
       :heroku_app_name,
@@ -18,6 +19,7 @@ module GithubHerokuDeployer
       OPTIONS.each do |option|
         self.send("#{option}=", ENV[option.to_s.upcase])
       end
+      ssh_enabled ||= "false"
     end
 
     # Allows config options to be read like a hash

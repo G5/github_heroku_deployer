@@ -39,6 +39,7 @@ describe GithubHerokuDeployer do
     context "configured" do
       before :each do
         GithubHerokuDeployer.configure do |config|
+          config.ssh_enabled     = "false"
           config.github_repo     = ENV["GITHUB_REPO"]
           config.heroku_api_key  = ENV["HEROKU_API_KEY"]
           config.heroku_app_name = ENV["HEROKU_APP_NAME"]
@@ -56,6 +57,7 @@ describe GithubHerokuDeployer do
 
       it "should deploy private repos" do
         GithubHerokuDeployer.configure do |config|
+          config.ssh_enabled = "true"
           config.github_repo = ENV["PRIVATE_GITHUB_REPO"]
         end
         GithubHerokuDeployer.deploy.should be true
