@@ -1,6 +1,6 @@
 # Github Heroku Deployer
 
-Ruby gem to deploy repos to Heroku.
+Ruby gem to deploy Github repos to Heroku
 
 
 ## Current Version
@@ -40,6 +40,7 @@ Set defaults in an initializer, defaults are shown:
 
 ```ruby
 GithubHerokuDeployer.configure do |config|
+  config.ssh             = false
   config.github_repo     = ENV["GITHUB_REPO"]
   config.heroku_api_key  = ENV["HEROKU_API_KEY"]
   config.heroku_app_name = ENV["HEROKU_APP_NAME"]
@@ -51,11 +52,11 @@ end
 Export you environment variables wherever you do that:
 
 ```bash
-export HEROKU_USERNAME=heroku_username
+export GITHUB_REPO=git@github.com:your/repo.git
 export HEROKU_API_KEY=heroku_api_key
 export HEROKU_APP_NAME=heroku_app_name
 export HEROKU_REPO=git@heroku.com:repo.git
-export GITHUB_REPO=git@github.com:your/repo.git
+export HEROKU_USERNAME=heroku_username
 ```
 
 Deploy:
