@@ -19,7 +19,6 @@ module GithubHerokuDeployer
       OPTIONS.each do |option|
         self.send("#{option}=", ENV[option.to_s.upcase])
       end
-      ssh_enabled ||= "false"
     end
 
     # Allows config options to be read like a hash
@@ -47,7 +46,7 @@ module GithubHerokuDeployer
 
     def check_requirements
       OPTIONS.each do |option|
-        if send(option).nil? || send(option).empty?
+        if send(option).nil?
           raise GithubHerokuDeployer::ConfigurationException, "#{option} is missing"
         end
       end

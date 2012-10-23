@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'github_heroku_deployer'
 require 'github_heroku_deployer/configuration'
 
 describe GithubHerokuDeployer::Configuration do
