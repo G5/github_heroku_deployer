@@ -5,7 +5,7 @@ describe GithubHerokuDeployer do
   it { should respond_to :configuration }
   it { should respond_to :configure }
   it { should respond_to :deploy }
-  
+
   describe "configuration" do
     it "should be the configuration object" do
       GithubHerokuDeployer.configuration.should(
@@ -37,17 +37,6 @@ describe GithubHerokuDeployer do
     end
 
     context "configured" do
-      before :each do
-        GithubHerokuDeployer.configure do |config|
-          config.ssh_enabled     = false
-          config.github_repo     = ENV["GITHUB_REPO"]
-          config.heroku_api_key  = ENV["HEROKU_API_KEY"]
-          config.heroku_app_name = ENV["HEROKU_APP_NAME"]
-          config.heroku_repo     = ENV["HEROKU_REPO"]
-          config.heroku_username = ENV["HEROKU_USERNAME"]
-        end
-      end
-
       it "should deploy public repos" do
         GithubHerokuDeployer.configure do |config|
           config.github_repo = ENV["PUBLIC_GITHUB_REPO"]
@@ -63,5 +52,19 @@ describe GithubHerokuDeployer do
         GithubHerokuDeployer.deploy.should be true
       end
     end
+
+    context "custom configuration" do
+      it "should override defaults" do
+        GithubHerokuDeployer.configure do |config|
+          config.github_repo = ""
+        end
+
+        override = ENV["PUBLIC_GITHUB_REPO"]
+        override.should_not equal GithubHerokuDeployer.configuration[:github_repo]
+        GithubHerokuDeployer.deploy(github_repo: override).should be true
+        override.should equal GithubHerokuDeployer.configuration[:github_repo]
+      end
+    end
+
   end
 end

@@ -18,8 +18,8 @@ describe GithubHerokuDeployer::Configuration do
   it "acts like a hash" do
     config = GithubHerokuDeployer::Configuration.new
     hash = config.to_hash
-    GithubHerokuDeployer::Configuration::OPTIONS.each do |option|
-      config[option].should eq(hash[option])
+    GithubHerokuDeployer::Configuration::OPTIONS.each_pair do |key, value|
+      config[key].should eq(hash[key])
     end
   end
 

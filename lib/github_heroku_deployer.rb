@@ -28,25 +28,30 @@ module GithubHerokuDeployer
     #     config.heroku_app_name = ENV["HEROKU_APP_NAME"]
     #     config.heroku_repo     = ENV["HEROKU_REPO"]
     #     config.heroku_username = ENV["HEROKU_USERNAME"]
+    #     config.ssh_enabled     = false
     #   end
     def configure
       yield(configuration)
     end
 
-    def deploy
-      configuration.check_requirements
-      heroku.find_or_create_app
-      git.push_app_to_heroku
+    def deploy(options={})
+      options = configuration.merge(options)
+      validate_options(options)
+      heroku_find_or_create_app(options)
+      git_push_app_to_heroku(options)
       true
     end
 
-    def heroku
-      Heroku.new(configuration)
+    def validate_options(options)
+      configuration.validate_presence(options)
     end
 
-    def git
-      Git.new(configuration)
+    def heroku_find_or_create_app(options)
+      Heroku.new(options).find_or_create_app
     end
 
+    def git_push_app_to_heroku(options)
+      Git.new(options).push_app_to_heroku
+    end
   end # class << self
 end

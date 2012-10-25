@@ -1,23 +1,23 @@
 module GithubHerokuDeployer
   class Configuration
-    OPTIONS = [
-      :ssh_enabled,
-      :github_repo,
-      :heroku_api_key,
-      :heroku_app_name,
-      :heroku_repo,
-      :heroku_username,
-    ]
+    OPTIONS = {
+      github_repo: ENV["GITHUB_REPO"],
+      heroku_api_key: ENV["HEROKU_API_KEY"],
+      heroku_app_name: ENV["HEROKU_APP_NAME"],
+      heroku_repo: ENV["HEROKU_REPO"],
+      heroku_username: ENV["HEROKU_USERNAME"],
+      ssh_enabled: false,
+    }
 
     # Defines accessors for all OPTIONS
-    OPTIONS.each do |option|
-      attr_accessor option
+    OPTIONS.each_pair do |key, value|
+      attr_accessor key
     end
 
     # Initializes defaults to be the environment varibales of the same names
     def initialize
-      OPTIONS.each do |option|
-        self.send("#{option}=", ENV[option.to_s.upcase])
+      OPTIONS.each_pair do |key, value|
+        self.send("#{key}=", value)
       end
     end
 
@@ -31,7 +31,8 @@ module GithubHerokuDeployer
     # Returns a hash of all configurable options
     def to_hash
       OPTIONS.inject({}) do |hash, option|
-        hash[option.to_sym] = self.send(option)
+        key = option.first
+        hash[key] = self.send(key)
         hash
       end
     end
@@ -44,10 +45,10 @@ module GithubHerokuDeployer
       to_hash.merge(hash)
     end
 
-    def check_requirements
-      OPTIONS.each do |option|
-        if send(option).nil?
-          raise GithubHerokuDeployer::ConfigurationException, "#{option} is missing"
+    def validate_presence(options)
+      OPTIONS.each_pair do |key, value|
+        if options[key].nil?
+          raise GithubHerokuDeployer::ConfigurationException, "#{key} is missing"
         end
       end
     end
