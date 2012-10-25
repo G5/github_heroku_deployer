@@ -3,9 +3,9 @@ require "heroku-api"
 module GithubHerokuDeployer
   class Heroku
 
-    def initialize(configuration)
-      @heroku_api_key = configuration[:heroku_api_key]
-      @heroku_app_name = configuration[:heroku_app_name]
+    def initialize(options)
+      @heroku_api_key = options[:heroku_api_key]
+      @heroku_app_name = options[:heroku_app_name]
     end
 
     def heroku
