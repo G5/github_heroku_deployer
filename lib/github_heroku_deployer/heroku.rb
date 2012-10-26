@@ -17,7 +17,9 @@ module GithubHerokuDeployer
     end
 
     def find_or_create_app
-      find_app || create_app
+      find_app
+    rescue ::Heroku::API::Errors::NotFound
+      create_app
     end
 
     def find_app
