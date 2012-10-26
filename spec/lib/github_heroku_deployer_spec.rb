@@ -12,10 +12,10 @@ describe GithubHerokuDeployer do
         be_a_kind_of GithubHerokuDeployer::Configuration)
     end
 
-    it "gives a new instance if non defined" do
+    it "give a new instance if non defined" do
       GithubHerokuDeployer.configuration = nil
-      GithubHerokuDeployer.configuration.should be_a_kind_of(
-        GithubHerokuDeployer::Configuration)
+      GithubHerokuDeployer.configuration.should(
+        be_a_kind_of GithubHerokuDeployer::Configuration)
     end
   end
 
