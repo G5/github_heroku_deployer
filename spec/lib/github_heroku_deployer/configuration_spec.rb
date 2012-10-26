@@ -29,11 +29,6 @@ describe GithubHerokuDeployer::Configuration do
     config.merge(:key => 'value').should eq(hash.merge(:key => 'value'))
   end
 
-  it "gives a new instance if non defined" do
-    GithubHerokuDeployer.configuration = nil
-    GithubHerokuDeployer.configuration.should be_a_kind_of(GithubHerokuDeployer::Configuration)
-  end
-
   def assert_config_default(option, default_value, config = nil)
     config ||= GithubHerokuDeployer::Configuration.new
     config.send(option).should eq(default_value)

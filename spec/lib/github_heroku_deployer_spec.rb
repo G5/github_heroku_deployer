@@ -6,14 +6,20 @@ describe GithubHerokuDeployer do
   it { should respond_to :configure }
   it { should respond_to :deploy }
 
-  describe "configuration" do
+  describe "::configuration" do
     it "should be the configuration object" do
       GithubHerokuDeployer.configuration.should(
         be_a_kind_of GithubHerokuDeployer::Configuration)
     end
+
+    it "gives a new instance if non defined" do
+      GithubHerokuDeployer.configuration = nil
+      GithubHerokuDeployer.configuration.should be_a_kind_of(
+        GithubHerokuDeployer::Configuration)
+    end
   end
 
-  describe "configure" do
+  describe "::configure" do
     it "should yield the configuration object" do
       GithubHerokuDeployer.configure do |config|
         config.should equal(GithubHerokuDeployer.configuration)
@@ -21,29 +27,29 @@ describe GithubHerokuDeployer do
     end
   end
 
-  describe "deploy" do
+  describe "::deploy" do
 
-    context "unconfigured" do
+    context "when unconfigured" do
       before :each do
         GithubHerokuDeployer.configure do |config|
           config.github_repo = nil
         end
       end
 
-      it "should require github_repo to be set" do
+      it "requires github_repo to be set" do
         lambda { GithubHerokuDeployer.deploy }.should(
           raise_error ::GithubHerokuDeployer::ConfigurationException)
       end
     end
 
-    context "configured" do
+    context "when configured" do
       before :each do
         @deployer = mock("github_heroku_deployer")
         @deployer.stub!(:deploy).and_return(true)
       end
 
       # TODO: how can I test this better?
-      it "should deploy public repos" do
+      it "deploys public repos" do
         GithubHerokuDeployer.configure do |config|
           config.github_repo = ENV["PUBLIC_GITHUB_REPO"]
         end
@@ -52,7 +58,7 @@ describe GithubHerokuDeployer do
       end
 
       # TODO: how can I test this better?
-      it "should deploy private repos" do
+      it "deploys private repos" do
         GithubHerokuDeployer.configure do |config|
           config.ssh_enabled = true
           config.github_repo = ENV["PRIVATE_GITHUB_REPO"]
@@ -62,7 +68,7 @@ describe GithubHerokuDeployer do
       end
 
       # TODO: how can I test this better?
-      it "should override defaults" do
+      it "overrides defaults" do
         GithubHerokuDeployer.configure do |config|
           config.github_repo = ""
         end
