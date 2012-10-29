@@ -60,7 +60,6 @@ describe GithubHerokuDeployer do
       # TODO: how can I test this better?
       it "deploys private repos" do
         GithubHerokuDeployer.configure do |config|
-          config.ssh_enabled = true
           config.github_repo = ENV["PRIVATE_GITHUB_REPO"]
         end
         # GithubHerokuDeployer.deploy.should be true

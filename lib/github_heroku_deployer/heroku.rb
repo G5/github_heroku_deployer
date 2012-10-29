@@ -30,9 +30,13 @@ module GithubHerokuDeployer
       heroku.post_app(name: @heroku_app_name)
     end
 
-    # def delete_app
-    #   heroku.delete_app(@heroku_app_name)
-    # end
+    def run(command)
+      heroku.post_ps(@heroku_app_name, command)
+    end
+    
+    def delete_app
+      heroku.delete_app(@heroku_app_name)
+    end
 
     # def add_deployhooks_http(url)
     #   add_addon("deployhooks:http", url: url)
@@ -44,10 +48,6 @@ module GithubHerokuDeployer
 
     # def delete_addon(addon)
     #   heroku.delete_addon(@heroku_app_name, addon)
-    # end
-
-    # def migrate
-    #   heroku.post_ps(@heroku_app_name, "rake db:migrate")
     # end
   end
 end

@@ -1,13 +1,12 @@
 module GithubHerokuDeployer
   class Configuration
     OPTIONS = {
-      github_private_key: ENV["GITHUB_PRIVATE_KEY"],
+      id_rsa: ENV["ID_RSA"],
       github_repo: ENV["GITHUB_REPO"],
       heroku_api_key: ENV["HEROKU_API_KEY"],
       heroku_app_name: ENV["HEROKU_APP_NAME"],
       heroku_repo: ENV["HEROKU_REPO"],
       heroku_username: ENV["HEROKU_USERNAME"],
-      ssh_enabled: false,
     }
 
     # Defines accessors for all OPTIONS

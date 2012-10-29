@@ -5,10 +5,9 @@ module GithubHerokuDeployer
   class Git
 
     def initialize(options)
-      @ssh_enabled = options[:ssh_enabled]
       @heroku_repo = options[:heroku_repo]
       @github_repo = options[:github_repo]
-      @private_key = options[:github_private_key]
+      @id_rsa = options[:id_rsa]
     end
 
     def push_app_to_heroku(remote="heroku", branch="master")
@@ -24,14 +23,9 @@ module GithubHerokuDeployer
     end
 
     def setup_repo
-      # remove_folder
       clone_or_pull
       open
     end
-
-    # def remove_folder
-    #   `rm -r #{folder}`
-    # end
 
     def folder
       @folder ||= "repos/#{Zlib.crc32(@github_repo)}"
@@ -65,12 +59,12 @@ module GithubHerokuDeployer
     end
 
     def ssh_wrapper
-      GitSSHWrapper.new(private_key_path: private_key_path)
+      GitSSHWrapper.new(private_key_path: id_rsa_path)
     end
 
-    def private_key_path
+    def id_rsa_path
       file = Tempfile.new("id_rsa")
-      file.write(@private_key)
+      file.write(@id_rsa)
       file.rewind
       file.path
     end
