@@ -25,7 +25,7 @@ module GithubHerokuDeployer
     def setup_repo
       # remove_folder
       clone_or_pull
-      open_repo
+      open
     end
 
     # def remove_folder
@@ -45,22 +45,37 @@ module GithubHerokuDeployer
     end
 
     def clone
-      wrapper = GitSSHWrapper.new(private_key_path: "~/.ssh/id_rsa")
+      wrapper = ssh_wrapper
       `env #{wrapper.git_ssh} git clone #{@github_repo} #{folder}`
     ensure
       wrapper.unlink
     end
 
     def pull
-      wrapper = GitSSHWrapper.new(private_key_path: "~/.ssh/id_rsa")
+      wrapper = ssh_wrapper
       dir = Dir.pwd # need to cd back to here
       `cd #{folder}; env #{wrapper.git_ssh} git pull; cd #{dir}`
     ensure
       wrapper.unlink
     end
 
-    def open_repo
+    def open
       ::Git.open(folder)
+    end
+
+    def ssh_wrapper
+      # GitSSHWrapper.new(private_key_path: "~/.ssh/id_rsa")
+      GitSSHWrapper.new(private_key_path: private_key_path)
+    end
+
+    def private_key
+      @private_key ||= ENV["GITHUB_PRIVATE_KEY"]
+    end
+
+    def private_key_path
+      file = Tempfile.new("github_rsa")
+      file.write(private_key)
+      file.path
     end
   end
 end
