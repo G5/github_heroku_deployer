@@ -8,10 +8,11 @@ module GithubHerokuDeployer
       @ssh_enabled = options[:ssh_enabled]
       @heroku_repo = options[:heroku_repo]
       @github_repo = options[:github_repo]
+      @private_key = options[:github_private_key]
     end
 
     def push_app_to_heroku(remote="heroku", branch="master")
-      wrapper = GitSSHWrapper.new(private_key_path: "~/.ssh/id_rsa")
+      wrapper = ssh_wrapper
       repo.add_remote("heroku", @heroku_repo) unless repo.remote("heroku").url
       `cd #{repo.dir}; env #{wrapper.git_ssh} git push -f #{remote} #{branch}`
     ensure
@@ -54,7 +55,7 @@ module GithubHerokuDeployer
     def pull
       wrapper = ssh_wrapper
       dir = Dir.pwd # need to cd back to here
-      `cd #{folder}; env #{wrapper.git_ssh} git pull; cd #{dir}`
+      `cd #{dir}/#{folder}; env #{wrapper.git_ssh} git pull; cd #{dir}`
     ensure
       wrapper.unlink
     end
@@ -64,17 +65,13 @@ module GithubHerokuDeployer
     end
 
     def ssh_wrapper
-      # GitSSHWrapper.new(private_key_path: "~/.ssh/id_rsa")
       GitSSHWrapper.new(private_key_path: private_key_path)
     end
 
-    def private_key
-      @private_key ||= ENV["GITHUB_PRIVATE_KEY"]
-    end
-
     def private_key_path
-      file = Tempfile.new("github_rsa")
-      file.write(private_key)
+      file = Tempfile.new("id_rsa")
+      file.write(@private_key)
+      file.rewind
       file.path
     end
   end
