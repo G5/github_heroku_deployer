@@ -9,6 +9,7 @@ module GithubHerokuDeployer
       @github_repo = options[:github_repo]
       @id_rsa = options[:id_rsa]
       @logger = options[:logger]
+      @repo_dir = options[:repo_dir]
     end
 
     def push_app_to_heroku(remote="heroku", branch="master")
@@ -34,7 +35,7 @@ module GithubHerokuDeployer
     end
 
     def setup_folder
-      folder = "tmp/repos/#{Zlib.crc32(@github_repo)}"
+      folder = File.join(@repo_dir, Zlib.crc32(@github_repo).to_s)
       `mkdir -p #{folder}`
       folder
     end

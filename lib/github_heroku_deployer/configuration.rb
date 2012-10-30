@@ -8,6 +8,7 @@ module GithubHerokuDeployer
       heroku_username: ENV["HEROKU_USERNAME"],
       id_rsa: ENV["ID_RSA"],
       logger: ::Logger.new(STDOUT),
+      repo_dir: ENV["REPO_DIR"]
     }
 
     # Defines accessors for all OPTIONS
