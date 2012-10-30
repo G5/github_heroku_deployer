@@ -14,7 +14,7 @@ module GithubHerokuDeployer
 
     def push_app_to_heroku(remote="heroku", branch="master")
       wrapper = ssh_wrapper
-      repo.remove_remote("heroku") if repo.remote("heroku").url
+      repo.remote("heroku").remove if repo.remote("heroku").url
       repo.add_remote("heroku", @heroku_repo)
       @logger.info "deploying #{repo.dir} to #{repo.remote("heroku").url} from branch #{branch}"
       `cd #{repo.dir}; env #{wrapper.git_ssh} git push -f #{remote} #{branch}`
