@@ -40,24 +40,25 @@ Set defaults in an initializer, defaults are shown:
 
 ```ruby
 GithubHerokuDeployer.configure do |config|
-  config.id_rsa          = ENV["ID_RSA"]
   config.github_repo     = ENV["GITHUB_REPO"]
   config.heroku_api_key  = ENV["HEROKU_API_KEY"]
   config.heroku_app_name = ENV["HEROKU_APP_NAME"]
   config.heroku_repo     = ENV["HEROKU_REPO"]
   config.heroku_username = ENV["HEROKU_USERNAME"]
+  config.id_rsa          = ENV["ID_RSA"]
+  config.logger          = Logger.new
 end
 ```
 
 Export you environment variables wherever you do that:
 
 ```bash
-export ID_RSA=id_rsa
 export GITHUB_REPO=git@github.com:your/repo.git
 export HEROKU_API_KEY=heroku_api_key
 export HEROKU_APP_NAME=heroku_app_name
 export HEROKU_REPO=git@heroku.com:repo.git
 export HEROKU_USERNAME=heroku_username
+export ID_RSA=id_rsa
 ```
 
 Deploy:

@@ -1,3 +1,4 @@
+require "logger"
 require "github_heroku_deployer/exceptions"
 require "github_heroku_deployer/configuration"
 require "github_heroku_deployer/git"
@@ -23,12 +24,13 @@ module GithubHerokuDeployer
     #
     # @example
     #   GithubHerokuDeployer.configure do |config|
-    #     config.id_rsa          = ENV["ID_RSA"]
     #     config.github_repo     = ENV["GITHUB_REPO"]
     #     config.heroku_api_key  = ENV["HEROKU_API_KEY"]
     #     config.heroku_app_name = ENV["HEROKU_APP_NAME"]
     #     config.heroku_repo     = ENV["HEROKU_REPO"]
     #     config.heroku_username = ENV["HEROKU_USERNAME"]
+    #     config.id_rsa          = ENV["ID_RSA"]
+    #     config.logger          = Logger.new
     #   end
     def configure
       yield(configuration)

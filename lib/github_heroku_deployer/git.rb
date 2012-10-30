@@ -8,11 +8,13 @@ module GithubHerokuDeployer
       @heroku_repo = options[:heroku_repo]
       @github_repo = options[:github_repo]
       @id_rsa = options[:id_rsa]
+      @logger = options[:logger]
     end
 
     def push_app_to_heroku(remote="heroku", branch="master")
       wrapper = ssh_wrapper
       repo.add_remote("heroku", @heroku_repo) unless repo.remote("heroku").url
+      @logger.info "deploying #{repo.dir} to #{repo.remote("heroku").url} from branch #{branch}"
       `cd #{repo.dir}; env #{wrapper.git_ssh} git push -f #{remote} #{branch}`
     ensure
       wrapper.unlink
@@ -41,6 +43,7 @@ module GithubHerokuDeployer
 
     def clone
       wrapper = ssh_wrapper
+      @logger.info "cloning #{@github_repo} to #{folder}"
       `env #{wrapper.git_ssh} git clone #{@github_repo} #{folder}`
     ensure
       wrapper.unlink
@@ -49,6 +52,7 @@ module GithubHerokuDeployer
     def pull
       wrapper = ssh_wrapper
       dir = Dir.pwd # need to cd back to here
+      @logger.info "pulling from #{dir}/#{folder}"
       `cd #{dir}/#{folder}; env #{wrapper.git_ssh} git pull; cd #{dir}`
     ensure
       wrapper.unlink

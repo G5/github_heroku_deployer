@@ -8,6 +8,7 @@ module GithubHerokuDeployer
       @heroku_app_name = options[:heroku_app_name]
     end
 
+
     def heroku
       @heroku ||= ::Heroku::API.new(api_key: @heroku_api_key)
     end
