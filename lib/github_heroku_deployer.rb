@@ -42,6 +42,12 @@ module GithubHerokuDeployer
       true
     end
 
+    def heroku_run(command, options={})
+      options = configuration.merge(options)
+      validate_options(options)
+      Heroku.new(options).run(command)
+    end
+
     def validate_options(options)
       configuration.validate_presence(options)
     end
