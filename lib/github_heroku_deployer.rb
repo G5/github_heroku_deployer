@@ -30,7 +30,7 @@ module GithubHerokuDeployer
     #     config.heroku_repo     = ENV["HEROKU_REPO"]
     #     config.heroku_username = ENV["HEROKU_USERNAME"]
     #     config.id_rsa          = ENV["ID_RSA"]
-    #     config.logger          = Logger.new
+    #     config.logger          = Logger.new(STDOUT)
     #   end
     def configure
       yield(configuration)

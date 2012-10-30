@@ -53,8 +53,8 @@ describe GithubHerokuDeployer do
         GithubHerokuDeployer.configure do |config|
           config.github_repo = ENV["PUBLIC_GITHUB_REPO"]
         end
-        # GithubHerokuDeployer.deploy.should be true
-        @deployer.deploy.should be true
+        GithubHerokuDeployer.deploy.should be true
+        # @deployer.deploy.should be true
       end
 
       # TODO: how can I test this better?
