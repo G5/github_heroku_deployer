@@ -28,7 +28,7 @@ module GithubHerokuDeployer
     end
 
     def folder
-      @folder ||= "repos/#{Zlib.crc32(@github_repo)}"
+      @folder ||= "tmp/repos/#{Zlib.crc32(@github_repo)}"
     end
 
     def clone_or_pull
