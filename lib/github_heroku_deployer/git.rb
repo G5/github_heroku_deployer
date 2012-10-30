@@ -30,7 +30,13 @@ module GithubHerokuDeployer
     end
 
     def folder
-      @folder ||= "tmp/repos/#{Zlib.crc32(@github_repo)}"
+      @folder ||= setup_folder
+    end
+
+    def setup_folder
+      folder = "tmp/repos/#{Zlib.crc32(@github_repo)}"
+      `mkdir -p #{folder}`
+      folder
     end
 
     def clone_or_pull
