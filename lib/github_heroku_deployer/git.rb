@@ -37,7 +37,7 @@ module GithubHerokuDeployer
 
     def setup_folder
       folder = File.join(@repo_dir, Zlib.crc32(@github_repo).to_s)
-      `mkdir -p #{folder}`
+      FileUtils.mkdir_p(folder)
       folder
     end
 

@@ -42,31 +42,59 @@ describe GithubHerokuDeployer do
       end
     end
 
+    # TODO: how can I test these better?
     context "when configured" do
       before :each do
         @deployer = mock("github_heroku_deployer")
         @deployer.stub!(:deploy).and_return(true)
       end
 
-      # TODO: how can I test this better?
-      it "deploys public repos" do
-        GithubHerokuDeployer.configure do |config|
-          config.github_repo = ENV["PUBLIC_GITHUB_REPO"]
+      context "when repo does not exist locally" do
+        it "deploys public repos" do
+          public_repo = ENV["PUBLIC_GITHUB_REPO"]
+          public_repo_folder = Zlib.crc32(public_repo).to_s
+          repos_dir = GithubHerokuDeployer.configuration[:repo_dir]
+          full_path = File.join(repos_dir, public_repo_folder)
+          FileUtils.rm_r(full_path) if File.exists?(full_path)
+          GithubHerokuDeployer.configure do |config|
+            config.github_repo = public_repo
+          end
+          # GithubHerokuDeployer.deploy.should be true
+          @deployer.deploy.should be true
         end
-        GithubHerokuDeployer.deploy.should be true
-        # @deployer.deploy.should be true
+
+        it "deploys private repos" do
+          private_repo = ENV["PRIVATE_GITHUB_REPO"]
+          private_repo_folder = Zlib.crc32(private_repo).to_s
+          repos_dir = GithubHerokuDeployer.configuration[:repo_dir]
+          full_path = File.join(repos_dir, private_repo_folder)
+          FileUtils.rm_r(full_path) if File.exists?(full_path)
+          GithubHerokuDeployer.configure do |config|
+            config.github_repo = private_repo
+          end
+          # GithubHerokuDeployer.deploy.should be true
+          @deployer.deploy.should be true
+        end
       end
 
-      # TODO: how can I test this better?
-      it "deploys private repos" do
-        GithubHerokuDeployer.configure do |config|
-          config.github_repo = ENV["PRIVATE_GITHUB_REPO"]
+      context "when repo exists locally" do
+        it "deploys public repos" do
+          GithubHerokuDeployer.configure do |config|
+            config.github_repo = ENV["PUBLIC_GITHUB_REPO"]
+          end
+          # GithubHerokuDeployer.deploy.should be true
+          @deployer.deploy.should be true
         end
-        # GithubHerokuDeployer.deploy.should be true
-        @deployer.deploy.should be true
+
+        it "deploys private repos" do
+          GithubHerokuDeployer.configure do |config|
+            config.github_repo = ENV["PRIVATE_GITHUB_REPO"]
+          end
+          # GithubHerokuDeployer.deploy.should be true
+          @deployer.deploy.should be true
+        end
       end
 
-      # TODO: how can I test this better?
       it "overrides defaults" do
         GithubHerokuDeployer.configure do |config|
           config.github_repo = ""
