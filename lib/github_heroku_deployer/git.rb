@@ -17,8 +17,7 @@ module GithubHerokuDeployer
       `cd #{repo.dir}; git remote rm #{remote}` if repo.remote(remote).url
       repo.add_remote(remote, @heroku_repo)
       @logger.info "deploying #{repo.dir} to #{repo.remote(remote).url} from branch #{branch}"
-      result = `cd #{repo.dir}; env #{wrapper.git_ssh} git push -f #{remote} #{branch}`
-      @logger.info "result: #{result}"
+      `echo cd #{repo.dir}; env #{wrapper.git_ssh} git push -f #{remote} #{branch} 2>log/err.log`
     ensure
       wrapper.unlink
     end
@@ -47,8 +46,7 @@ module GithubHerokuDeployer
     def clone
       wrapper = ssh_wrapper
       @logger.info "cloning #{@github_repo} to #{folder}"
-      result = `env #{wrapper.git_ssh} git clone #{@github_repo} #{folder}`
-      @logger.info "result: #{result}"
+      `echo env #{wrapper.git_ssh} git clone #{@github_repo} #{folder} 2>log/err.log`
     ensure
       wrapper.unlink
     end
@@ -57,8 +55,7 @@ module GithubHerokuDeployer
       wrapper = ssh_wrapper
       dir = Dir.pwd # need to cd back to here
       @logger.info "pulling from #{folder}"
-      result = `cd #{folder}; env #{wrapper.git_ssh} git pull; cd #{dir}`
-      @logger.info "result: #{result}"
+      `echo cd #{folder}; env #{wrapper.git_ssh} git pull; cd #{dir} 2>log/err.log`
     ensure
       wrapper.unlink
     end
