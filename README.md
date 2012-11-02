@@ -1,11 +1,11 @@
 # Github Heroku Deployer
 
-Ruby gem to deploy Github repos to Heroku
+Ruby gem to deploy public and private Github repos to Heroku
 
 
 ## Current Version
 
-0.0.1
+0.0.5
 
 
 ## Requirements
@@ -67,7 +67,7 @@ Deploy:
   GithubHerokuDeployer.deploy
 ```
 
-TODO Override defaults:
+Override defaults:
 
 ```ruby
   GithubHerokuDeployer.deploy(github_repo: github_repo)
