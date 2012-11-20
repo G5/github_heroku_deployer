@@ -77,6 +77,7 @@ Override defaults:
 ## Authors
 
   * Jessica Lynn Suttles / [@jlsuttles](https://github.com/jlsuttles)
+  * Bookis Smuin / [@bookis](https://github.com/bookis)
 
 
 ## Contributing
@@ -91,6 +92,21 @@ Override defaults:
 
 If you find bugs, have feature requests or questions, please
 [file an issue](https://github.com/G5/github_heroku_deployer/issues).
+
+
+## Specs
+
+Export environment variables
+```bash
+export GITHUB_REPO=git@github.com:G5/static-sinatra-prototype.git
+export HEROKU_API_KEY=heroku_api_key
+export HEROKU_APP_NAME=static-sinatra-prototype
+export HEROKU_REPO=git@heroku.com:static-sinatra-prototype.git
+export HEROKU_USERNAME=heroku_username
+export ID_RSA=id_rsa
+export PRIVATE_GITHUB_REPO=git@github.com:g5search/g5-client-location.git
+export PUBLIC_GITHUB_REPO=git@github.com:G5/static-sinatra-prototype.git
+```
 
 
 ## License

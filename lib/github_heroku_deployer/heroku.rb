@@ -35,6 +35,10 @@ module GithubHerokuDeployer
       heroku.post_ps(@heroku_app_name, command)
     end
     
+    def config_set(config_vars)
+      heroku.put_config_vars(@heroku_app_name, config_vars)
+    end
+
     def delete_app
       heroku.delete_app(@heroku_app_name)
     end
