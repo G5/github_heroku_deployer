@@ -44,6 +44,12 @@ module GithubHerokuDeployer
       true
     end
 
+    def heroku_destroy(options={})
+      options = configuration.merge(options)
+      validate_options(options)
+      Heroku.new(options).destroy_app
+    end
+
     def heroku_run(command, options={})
       options = configuration.merge(options)
       validate_options(options)

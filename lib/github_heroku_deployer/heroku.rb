@@ -8,7 +8,6 @@ module GithubHerokuDeployer
       @heroku_app_name = options[:heroku_app_name]
     end
 
-
     def heroku
       @heroku ||= ::Heroku::API.new(api_key: @heroku_api_key)
     end
@@ -31,16 +30,16 @@ module GithubHerokuDeployer
       heroku.post_app(name: @heroku_app_name)
     end
 
+    def destroy_app
+      heroku.delete_app(@heroku_app_name)
+    end
+
     def run(command)
       heroku.post_ps(@heroku_app_name, command)
     end
     
     def config_set(config_vars)
       heroku.put_config_vars(@heroku_app_name, config_vars)
-    end
-
-    def delete_app
-      heroku.delete_app(@heroku_app_name)
     end
 
     # def add_deployhooks_http(url)
