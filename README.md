@@ -5,7 +5,7 @@ Ruby gem to deploy public and private Github repos to Heroku
 
 ## Current Version
 
-0.1.2
+0.1.3
 
 
 ## Requirements
