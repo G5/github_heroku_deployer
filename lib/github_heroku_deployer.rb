@@ -47,7 +47,7 @@ module GithubHerokuDeployer
     def heroku_restart(options={})
       options = configuration.merge(options)
       validate_options(options)
-      Heroku.new(options).heroku_restart
+      Heroku.new(options).heroku_restart_app
     end
 
     def heroku_destroy(options={})
