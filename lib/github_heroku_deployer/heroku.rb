@@ -30,6 +30,10 @@ module GithubHerokuDeployer
       heroku.post_app(name: @heroku_app_name)
     end
 
+    def restart_app
+      heroku.post_ps_restart(@heroku_app_name)
+    end
+
     def destroy_app
       heroku.delete_app(@heroku_app_name)
     end
