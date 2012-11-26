@@ -46,11 +46,11 @@ module GithubHerokuDeployer
       heroku.put_config_vars(@heroku_app_name, config_vars)
     end
 
-    def add_addon(addon, options={})
+    def addon_add(addon, options={})
       heroku.post_addon(@heroku_app_name, addon, options)
     end
 
-    def remove_addon(addon)
+    def addon_remove(addon)
       heroku.delete_addon(@heroku_app_name, addon)
     end
 
