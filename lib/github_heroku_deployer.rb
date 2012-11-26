@@ -68,6 +68,12 @@ module GithubHerokuDeployer
       Heroku.new(options).config_set(values)
     end
 
+    def heroku_addon_add(addon, options={})
+      options = configuration.merge(options)
+      validate_options(options)
+      Heroku.new(options).addon_add(addon)
+    end
+
     def validate_options(options)
       configuration.validate_presence(options)
     end
