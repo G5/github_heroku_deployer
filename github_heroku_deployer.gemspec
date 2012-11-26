@@ -7,17 +7,17 @@ Gem::Specification.new do |gem|
   gem.authors       = ["Jessica Lynn Suttles"]
   gem.email         = ["jlsuttles@gmail.com"]
   gem.description   = %q{Deploys Github repos to Heroku}
-  gem.summary       = %q{Deploys Github repos to Heroku}
-  gem.homepage      = ""
+  gem.summary       = %q{Deploys public and private Github repos to Heroku}
+  gem.homepage      = "https://github.com/G5/github_heroku_deployer"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 
-  gem.add_runtime_dependency "heroku-api", "~> 0.3.5"
-  gem.add_runtime_dependency "git", "~> 1.2.5"
-  gem.add_runtime_dependency "git-ssh-wrapper", "~> 0.1.0"
+  gem.add_dependency "heroku-api", "~> 0.3.5"
+  gem.add_dependency "git", "~> 1.2.5"
+  gem.add_dependency "git-ssh-wrapper", "~> 0.1.0"
 
   gem.add_development_dependency "rspec", "~> 2.11.0"
   gem.add_development_dependency "guard-rspec", "~> 2.1.0"
