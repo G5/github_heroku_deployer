@@ -41,21 +41,21 @@ module GithubHerokuDeployer
     def run(command)
       heroku.post_ps(@heroku_app_name, command)
     end
-    
+
     def config_set(config_vars)
       heroku.put_config_vars(@heroku_app_name, config_vars)
     end
 
+    def add_addon(addon, options={})
+      heroku.post_addon(@heroku_app_name, addon, options)
+    end
+
+    def remove_addon(addon)
+      heroku.delete_addon(@heroku_app_name, addon)
+    end
+
     # def add_deployhooks_http(url)
     #   add_addon("deployhooks:http", url: url)
-    # end
-
-    # def add_addon(addon, options={})
-    #   heroku.post_addon(@heroku_app_name, addon, options)
-    # end
-
-    # def delete_addon(addon)
-    #   heroku.delete_addon(@heroku_app_name, addon)
     # end
   end
 end
