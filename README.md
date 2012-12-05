@@ -73,6 +73,12 @@ Override defaults:
   GithubHerokuDeployer.deploy(github_repo: github_repo)
 ```
 
+Manipulate Repo:
+
+```ruby
+  GithubHerokuDeployer.deploy(github_repo: github_repo) { |repo| repo.add "/path/to/file" }
+```
+
 
 ## Authors
 
