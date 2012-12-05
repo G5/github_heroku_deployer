@@ -36,11 +36,11 @@ module GithubHerokuDeployer
       yield(configuration)
     end
 
-    def deploy(options={})
+    def deploy(options={}, &block)
       options = configuration.merge(options)
       validate_options(options)
       heroku_find_or_create_app(options)
-      git_push_app_to_heroku(options)
+      git_push_app_to_heroku(options, &block)
       true
     end
 
@@ -82,8 +82,9 @@ module GithubHerokuDeployer
       Heroku.new(options).find_or_create_app
     end
 
-    def git_push_app_to_heroku(options)
-      Git.new(options).push_app_to_heroku
+    def git_push_app_to_heroku(options, &block)
+      repo = Git.new(options)
+      repo.push_app_to_heroku(&block)
     end
   end # class << self
 end
