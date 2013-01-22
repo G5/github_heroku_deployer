@@ -1,3 +1,11 @@
+require 'simplecov'
+SimpleCov.start
+
+require 'rubygems'
+require 'rspec'
+require 'rspec/autorun'
+
+
 RSpec.configure do |config|
-  config.color = true
+  config.order = "random"
 end
