@@ -1,5 +1,7 @@
 # Github Heroku Deployer
 
+[![Code Climate](https://codeclimate.com/github/G5/github_heroku_deployer.png)](https://codeclimate.com/github/G5/github_heroku_deployer)
+
 Ruby gem to deploy public and private Github repos to Heroku
 
 
