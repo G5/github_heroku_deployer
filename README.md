@@ -1,5 +1,6 @@
 # Github Heroku Deployer
 
+[![Build Status](https://travis-ci.org/G5/microformats2.png?branch=master)](https://travis-ci.org/G5/microformats2)
 [![Code Climate](https://codeclimate.com/github/G5/github_heroku_deployer.png)](https://codeclimate.com/github/G5/github_heroku_deployer)
 
 Ruby gem to deploy public and private Github repos to Heroku
