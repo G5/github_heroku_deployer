@@ -7,7 +7,7 @@ require "github_heroku_deployer/version"
 
 module GithubHerokuDeployer
   class << self
-    # A GithubHerokuDeployer configuration object. Must act like a hash and 
+    # A GithubHerokuDeployer configuration object. Must act like a hash and
     # return sensible values for all GithubHerokuDeployer configuration options.
     #
     # @see GithubHerokuDeployer::Configuration.
@@ -72,6 +72,12 @@ module GithubHerokuDeployer
       options = configuration.merge(options)
       validate_options(options)
       Heroku.new(options).addon_add(addon)
+    end
+
+    def heroku_post_ps_scale(process, quantity, options={})
+      options = configuration.merge(options)
+      validate_options(options)
+      Heroku.new(options).post_ps_scale(process, quantity)
     end
 
     def validate_options(options)

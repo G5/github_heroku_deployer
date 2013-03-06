@@ -54,6 +54,10 @@ module GithubHerokuDeployer
       heroku.delete_addon(@heroku_app_name, addon)
     end
 
+    def post_ps_scale(process, quantity)
+      heroku.post_ps_scale(@heroku_app_name, process, quantity)
+    end
+
     # def add_deployhooks_http(url)
     #   add_addon("deployhooks:http", url: url)
     # end
