@@ -1,9 +1,6 @@
-require "logger"
-require "github_heroku_deployer/exceptions"
-require "github_heroku_deployer/configuration"
-require "github_heroku_deployer/git"
-require "github_heroku_deployer/heroku"
 require "github_heroku_deployer/version"
+require "github_heroku_deployer/configuration"
+require "github_heroku_deployer/deployer"
 
 module GithubHerokuDeployer
   class << self
@@ -27,70 +24,22 @@ module GithubHerokuDeployer
     #     config.github_repo     = ENV["GITHUB_REPO"]
     #     config.heroku_api_key  = ENV["HEROKU_API_KEY"]
     #     config.heroku_app_name = ENV["HEROKU_APP_NAME"]
-    #     config.heroku_repo     = ENV["HEROKU_REPO"]
-    #     config.heroku_username = ENV["HEROKU_USERNAME"]
     #     config.id_rsa          = ENV["ID_RSA"]
     #     config.logger          = Logger.new(STDOUT)
+    #     config.repo_dir        = ENV["REPO_DIR"]
     #   end
     def configure
       yield(configuration)
     end
 
-    def deploy(options={}, &block)
-      options = configuration.merge(options)
-      validate_options(options)
-      heroku_find_or_create_app(options)
-      git_push_app_to_heroku(options, &block)
-      true
+    def options(custom_options)
+      custom_options = configuration.merge(custom_options)
+      configuration.validate_presence(custom_options)
+      custom_options
     end
 
-    def heroku_restart(options={})
-      options = configuration.merge(options)
-      validate_options(options)
-      Heroku.new(options).restart_app
-    end
-
-    def heroku_destroy(options={})
-      options = configuration.merge(options)
-      validate_options(options)
-      Heroku.new(options).destroy_app
-    end
-
-    def heroku_run(command, options={})
-      options = configuration.merge(options)
-      validate_options(options)
-      Heroku.new(options).run(command)
-    end
-
-    def heroku_config_set(values, options={})
-      options = configuration.merge(options)
-      validate_options(options)
-      Heroku.new(options).config_set(values)
-    end
-
-    def heroku_addon_add(addon, options={})
-      options = configuration.merge(options)
-      validate_options(options)
-      Heroku.new(options).addon_add(addon)
-    end
-
-    def heroku_post_ps_scale(process, quantity, options={})
-      options = configuration.merge(options)
-      validate_options(options)
-      Heroku.new(options).post_ps_scale(process, quantity)
-    end
-
-    def validate_options(options)
-      configuration.validate_presence(options)
-    end
-
-    def heroku_find_or_create_app(options)
-      Heroku.new(options).find_or_create_app
-    end
-
-    def git_push_app_to_heroku(options, &block)
-      repo = Git.new(options)
-      repo.push_app_to_heroku(&block)
+    def new(custom_options={})
+      Deployer.new(custom_options)
     end
   end # class << self
 end

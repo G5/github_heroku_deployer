@@ -1,6 +1,6 @@
-require 'spec_helper'
-require 'github_heroku_deployer'
-require 'github_heroku_deployer/configuration'
+require "spec_helper"
+require "github_heroku_deployer"
+require "github_heroku_deployer/configuration"
 
 describe GithubHerokuDeployer::Configuration do
   it { should respond_to :"[]" }
@@ -9,10 +9,18 @@ describe GithubHerokuDeployer::Configuration do
 
   it "provides default values" do
     assert_config_default :github_repo, ENV["GITHUB_REPO"]
+    assert_config_default :heroku_api_key, ENV["HEROKU_API_KEY"]
+    assert_config_default :heroku_app_name, ENV["HEROKU_APP_NAME"]
+    assert_config_default :id_rsa, ENV["ID_RSA"]
+    assert_config_default :repo_dir, ENV["REPO_DIR"]
   end
 
   it "allows values to be overwritten" do
     assert_config_overridable :github_repo
+    assert_config_overridable :heroku_api_key
+    assert_config_overridable :heroku_app_name
+    assert_config_overridable :id_rsa
+    assert_config_overridable :repo_dir
   end
 
   it "acts like a hash" do

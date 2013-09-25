@@ -2,17 +2,17 @@ require "git"
 require "git-ssh-wrapper"
 
 module GithubHerokuDeployer
-  class Git
-
+  class GitWrapper
     def initialize(options)
-      @heroku_repo = options[:heroku_repo]
+      options = GithubHerokuDeployer.options(options)
+      @heroku_repo = "git@heroku.com:#{options[:heroku_app_name]}.git"
       @github_repo = options[:github_repo]
       @id_rsa = options[:id_rsa]
       @logger = options[:logger]
       @repo_dir = options[:repo_dir]
     end
 
-    def push_app_to_heroku(remote="heroku", branch="master", &block)
+    def deploy_to_heroku(remote="heroku", branch="master", &block)
       wrapper = ssh_wrapper
       run "cd #{repo.dir}; git remote rm #{remote}" if repo.remote(remote).url
       repo.add_remote(remote, @heroku_repo)
