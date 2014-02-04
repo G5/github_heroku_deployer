@@ -1,34 +1,8 @@
-require 'spec_helper'
-require 'github_heroku_deployer'
+require "spec_helper"
+require "github_heroku_deployer/git_wrapper"
 
-describe GithubHerokuDeployer do
-  it { should respond_to :configuration }
-  it { should respond_to :configure }
-  it { should respond_to :deploy }
-
-  describe "::configuration" do
-    it "should be the configuration object" do
-      GithubHerokuDeployer.configuration.should(
-        be_a_kind_of GithubHerokuDeployer::Configuration)
-    end
-
-    it "give a new instance if non defined" do
-      GithubHerokuDeployer.configuration = nil
-      GithubHerokuDeployer.configuration.should(
-        be_a_kind_of GithubHerokuDeployer::Configuration)
-    end
-  end
-
-  describe "::configure" do
-    it "should yield the configuration object" do
-      GithubHerokuDeployer.configure do |config|
-        config.should equal(GithubHerokuDeployer.configuration)
-      end
-    end
-  end
-
-  describe "::deploy" do
-
+describe GithubHerokuDeployer::GitWrapper do
+  describe "::new" do
     context "when unconfigured" do
       before :each do
         GithubHerokuDeployer.configure do |config|
