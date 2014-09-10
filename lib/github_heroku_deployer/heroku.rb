@@ -1,4 +1,5 @@
 require "heroku-api"
+require "platform-api"
 
 module GithubHerokuDeployer
   class Heroku
@@ -73,7 +74,7 @@ module GithubHerokuDeployer
     end
 
     def heroku_platform_api
-      @heroku_platform_api ||= PlatformAPI.connect_oauth(@heroku_api_key)
+      @heroku_platform_api ||= ::PlatformAPI.connect_oauth(@heroku_api_key)
     end
   end
 end
