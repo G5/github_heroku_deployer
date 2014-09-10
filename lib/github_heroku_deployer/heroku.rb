@@ -31,7 +31,6 @@ module GithubHerokuDeployer
 
     def create_app
       heroku_platform_api.organization_app.create(platform_api_options)
-      #heroku.post_app(name: @heroku_app_name)
     end
 
     def restart_app
