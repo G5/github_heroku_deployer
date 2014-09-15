@@ -1,4 +1,5 @@
 require "heroku-api"
+require "platform-api"
 
 module GithubHerokuDeployer
   class Heroku
@@ -6,11 +7,13 @@ module GithubHerokuDeployer
     def initialize(options)
       @heroku_api_key = options[:heroku_api_key]
       @heroku_app_name = options[:heroku_app_name]
+      @heroku_organization_name = options[:heroku_organization_name]
     end
 
     def heroku
       @heroku ||= ::Heroku::API.new(api_key: @heroku_api_key)
     end
+
 
     def app
       @app ||= find_or_create_app
@@ -27,7 +30,7 @@ module GithubHerokuDeployer
     end
 
     def create_app
-      heroku.post_app(name: @heroku_app_name)
+      heroku_platform_api.organization_app.create(platform_api_options)
     end
 
     def restart_app
@@ -61,5 +64,17 @@ module GithubHerokuDeployer
     # def add_deployhooks_http(url)
     #   add_addon("deployhooks:http", url: url)
     # end
+
+    private
+
+    def platform_api_options
+      { name: @heroku_app_name,
+        organization: @heroku_organization_name }
+    end
+
+    def heroku_platform_api
+      @heroku_platform_api ||= ::PlatformAPI.connect_oauth(@heroku_api_key)
+    end
   end
 end
+

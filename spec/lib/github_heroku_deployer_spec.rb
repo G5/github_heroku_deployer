@@ -104,6 +104,18 @@ describe GithubHerokuDeployer do
         override.should_not equal GithubHerokuDeployer.configuration[:github_repo]
         @deployer.deploy(github_repo: override).should be true
       end
+
+      context "passing an organization" do
+        before do
+          GithubHerokuDeployer::Heroku.any_instance.stub(:new)
+          GithubHerokuDeployer::Git.any_instance.stub(:push_app_to_heroku)
+        end
+        it "accepts organization option" do
+          GithubHerokuDeployer.should_receive(:heroku_find_or_create_app).with(hash_including(organization: "test-org"))
+          GithubHerokuDeployer.deploy({organization: "test-org"})
+        end
+      end
     end
   end
 end
+
