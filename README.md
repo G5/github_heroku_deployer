@@ -8,12 +8,13 @@ Ruby gem to deploy public and private Github repos to Heroku
 
 ## Current Version
 
-0.2.1
+0.3.0
 
 
 ## Requirements
 
 * ["heroku_api", "~> 0.3.5"](http://rubygems.org/gems/heroku-api)
+* ["platform-api", "~> 0.2"](http://rubygems.org/gems/platform-api)
 * ["git", "~> 1.2.5"](http://rubygems.org/gems/git)
 * ["git-ssh-wrapper", "~> 0.1.0"](http://rubygems.org/gems/git-ssh-wrapper)
 
@@ -87,6 +88,7 @@ Manipulate Repo:
 
   * Jessica Lynn Suttles / [@jlsuttles](https://github.com/jlsuttles)
   * Bookis Smuin / [@bookis](https://github.com/bookis)
+  * Michael Mitchell / [@variousred](https://github.com/variousred)
 
 
 ## Contributing
