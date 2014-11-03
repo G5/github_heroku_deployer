@@ -31,13 +31,8 @@ module GithubHerokuDeployer
     end
 
     def create_app
-      if platform_api_options[:organization] != nil
-        @logger.info("Creating org Heroku app with options: #{platform_api_options}")
-        heroku_platform_api.organization_app.create(platform_api_options)
-      else
-        @logger.info("Creating non-org Heroku app with options: #{platform_api_options}")
-        heroku_platform_api.app.create(platform_api_options)
-      end
+      @logger.info("Creating org Heroku app with options: #{platform_api_options}")
+      heroku_platform_api.organization_app.create(platform_api_options)
     end
 
     def restart_app
