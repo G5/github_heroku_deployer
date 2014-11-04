@@ -31,7 +31,7 @@ module GithubHerokuDeployer
     end
 
     def create_app
-      @logger.info("Creating org Heroku app with options: #{platform_api_options}")
+      @logger.info("Creating Heroku app with options: #{platform_api_options}")
       heroku_platform_api.organization_app.create(platform_api_options)
     end
 
@@ -71,7 +71,9 @@ module GithubHerokuDeployer
 
     def platform_api_options
       options = {name: @heroku_app_name}
+      @logger.info("Org option: #{@heroku_organization_name}")
       unless @heroku_organization_name == "" || @heroku_organization_name == nil
+        @logger.info("inside org name value check, merging")
         options.merge(organization: @heroku_organization_name)
       end
       options
