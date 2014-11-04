@@ -8,6 +8,7 @@ module GithubHerokuDeployer
       @heroku_api_key = options[:heroku_api_key]
       @heroku_app_name = options[:heroku_app_name]
       @heroku_organization_name = options[:heroku_organization_name]
+      @logger = GithubHerokuDeployer.configuration.logger
     end
 
     def heroku
@@ -30,6 +31,7 @@ module GithubHerokuDeployer
     end
 
     def create_app
+      @logger.info("Creating Heroku app with options: #{platform_api_options}")
       heroku_platform_api.organization_app.create(platform_api_options)
     end
 
@@ -68,8 +70,11 @@ module GithubHerokuDeployer
     private
 
     def platform_api_options
-      { name: @heroku_app_name,
-        organization: @heroku_organization_name }
+      options = {name: @heroku_app_name}
+      unless @heroku_organization_name == "" || @heroku_organization_name == nil
+        options.merge!(organization: @heroku_organization_name)
+      end
+      options
     end
 
     def heroku_platform_api
