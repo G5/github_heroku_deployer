@@ -74,7 +74,7 @@ module GithubHerokuDeployer
       @logger.info("Org option: #{@heroku_organization_name}")
       unless @heroku_organization_name == "" || @heroku_organization_name == nil
         @logger.info("inside org name value check, merging")
-        options.merge(organization: @heroku_organization_name)
+        options.merge!(organization: @heroku_organization_name)
       end
       options
     end
