@@ -5,6 +5,7 @@ describe GithubHerokuDeployer do
   it { should respond_to :configuration }
   it { should respond_to :configure }
   it { should respond_to :deploy }
+  it { should respond_to :create }
 
   describe "::configuration" do
     it "should be the configuration object" do
@@ -111,8 +112,34 @@ describe GithubHerokuDeployer do
           GithubHerokuDeployer::Git.any_instance.stub(:push_app_to_heroku)
         end
         it "accepts organization option" do
-          GithubHerokuDeployer.should_receive(:heroku_find_or_create_app).with(hash_including(organization: "test-org"))
           GithubHerokuDeployer.deploy({organization: "test-org"})
+        end
+      end
+    end
+  end
+
+  describe "::create" do
+    context "when unconfigured" do
+      before :each do
+        GithubHerokuDeployer.configure do |config|
+          config.github_repo = nil
+        end
+      end
+
+      it "requires github_repo to be set" do
+        lambda { GithubHerokuDeployer.create }.should(
+          raise_error ::GithubHerokuDeployer::ConfigurationException)
+      end
+    end
+
+    context "when configured" do
+      context "passing an organization" do
+        before do
+          GithubHerokuDeployer::Heroku.any_instance.stub(:new)
+        end
+        it "accepts organization option" do
+          GithubHerokuDeployer.should_receive(:heroku_find_or_create_app).with(hash_including(organization: "test-org"))
+          GithubHerokuDeployer.create({organization: "test-org", github_repo:"foo"})
         end
       end
     end
