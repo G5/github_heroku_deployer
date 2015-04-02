@@ -65,6 +65,12 @@ export HEROKU_USERNAME=heroku_username
 export ID_RSA=id_rsa
 ```
 
+Create Heroku App:
+
+```ruby
+  GithubHerokuDeployer.create
+```
+
 Deploy:
 
 ```ruby
