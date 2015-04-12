@@ -10,6 +10,7 @@ module GithubHerokuDeployer
       @id_rsa = options[:id_rsa]
       @logger = options[:logger]
       @repo_dir = options[:repo_dir]
+      @update_repo = options[:update_repo]
       @folder = setup_folder
       @repo = setup_repo
     end
@@ -54,7 +55,8 @@ module GithubHerokuDeployer
 
     def clone
       wrapper = ssh_wrapper
-      @logger.info "cloning #{@github_repo} to #{@folder}"
+      repo = @update_repo ? @heroku_repo : @github_repo
+      @logger.info "cloning #{repo} to #{@folder}"
       run "env #{wrapper.git_ssh} git clone #{@github_repo} #{@folder}"
     ensure
       wrapper.unlink

@@ -49,6 +49,13 @@ module GithubHerokuDeployer
       true
     end
 
+    def update(options={}, &block)
+      options = configuration.merge(options)
+      validate_options(options)
+      git_push_app_to_heroku(options, &block)
+      true
+    end
+
     def heroku_restart(options={})
       options = configuration.merge(options)
       validate_options(options)
@@ -97,5 +104,11 @@ module GithubHerokuDeployer
       repo = Git.new(options)
       repo.push_app_to_heroku(&block)
     end
+
+    def git_update_app_on_heroku(options, &block)
+      repo = Git.new(options)
+      repo.push_app_to_heroku(&block)
+    end
+
   end # class << self
 end
