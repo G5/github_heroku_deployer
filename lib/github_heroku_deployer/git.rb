@@ -57,7 +57,7 @@ module GithubHerokuDeployer
       wrapper = ssh_wrapper
       repo = @update_repo ? @heroku_repo : @github_repo
       @logger.info "cloning #{repo} to #{@folder}"
-      run "env #{wrapper.git_ssh} git clone #{@github_repo} #{@folder}"
+      run "env #{wrapper.git_ssh} git clone #{repo} #{@folder}"
     ensure
       wrapper.unlink
     end
