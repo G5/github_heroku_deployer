@@ -73,10 +73,10 @@ module GithubHerokuDeployer
       Heroku.new(options).config_set(values)
     end
 
-    def heroku_addon_add(addon, options={})
+    def heroku_addon_add(addon, options={}, addon_options={})
       options = configuration.merge(options)
       validate_options(options)
-      Heroku.new(options).addon_add(addon)
+      Heroku.new(options).addon_add(addon, addon_options)
     end
 
     def heroku_post_ps_scale(process, quantity, options={})
