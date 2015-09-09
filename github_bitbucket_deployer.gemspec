@@ -1,22 +1,20 @@
 # -*- encoding: utf-8 -*-
-require File.expand_path('../lib/github_heroku_deployer/version', __FILE__)
+require File.expand_path('../lib/github_bitbucket_deployer/version', __FILE__)
 
 Gem::Specification.new do |gem|
-  gem.name          = "github_heroku_deployer"
-  gem.version       = GithubHerokuDeployer::VERSION
+  gem.name          = "github_bitbucket_deployer"
+  gem.version       = GithubBitbucketDeployer::VERSION
   gem.authors       = ["Jessica Lynn Suttles", "Michael Mitchell"]
-  gem.email         = ["jlsuttles@gmail.com"]
-  gem.description   = %q{Deploys Github repos to Heroku}
-  gem.summary       = %q{Deploys public and private Github repos to Heroku}
-  gem.homepage      = "https://github.com/G5/github_heroku_deployer"
+  gem.email         = ["jlsuttles@gmail.com", "michaelmitchell@gmail.com"]
+  gem.description   = %q{Deploys Github repos to bitbucket}
+  gem.summary       = %q{Deploys public and private Github repos to bitbucket}
+  gem.homepage      = "https://github.com/G5/github_bitbucket_deployer"
 
   gem.files         = `git ls-files`.split($\)
   gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 
-  gem.add_dependency "heroku-api", "~> 0.3.5"
-  gem.add_dependency "platform-api", "~> 0.2"
   gem.add_dependency "git", "~> 1.2.5"
   gem.add_dependency "git-ssh-wrapper", "~> 0.1.0"
 

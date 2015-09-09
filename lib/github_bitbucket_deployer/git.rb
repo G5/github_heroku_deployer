@@ -1,21 +1,21 @@
 require "git"
 require "git-ssh-wrapper"
 
-module GithubHerokuDeployer
+module GithubBitbucketDeployer
   class Git
 
     def initialize(options)
-      @heroku_repo = options[:heroku_repo]
-      @github_repo = options[:github_repo]
+      @bitbucket_repo_url = options[:bitbucket_repo_url]
+      @bitbucket_repo_name = options[:bitbucket_repo_name]
       @id_rsa = options[:id_rsa]
       @logger = options[:logger]
       @repo_dir = options[:repo_dir]
     end
 
-    def push_app_to_heroku(remote="heroku", branch="master", &block)
+    def push_app_to_bitbucket(remote="bitbucket", branch="master", &block)
       wrapper = ssh_wrapper
       run "cd #{repo.dir}; git remote rm #{remote}" if repo.remote(remote).url
-      repo.add_remote(remote, @heroku_repo)
+      repo.add_remote(remote, @bitbucket_repo_url)
       yield(repo) if block_given?
       @logger.info "deploying #{repo.dir} to #{repo.remote(remote).url} from branch #{branch}"
       run "cd #{repo.dir}; env #{wrapper.git_ssh} git push -f #{remote} #{branch}"
@@ -37,7 +37,7 @@ module GithubHerokuDeployer
     end
 
     def setup_folder
-      folder = File.join(@repo_dir, Zlib.crc32(@github_repo).to_s)
+      folder = File.join(@repo_dir, Zlib.crc32(@bitbucket_repo_name).to_s)
       FileUtils.mkdir_p(folder)
       folder
     end
@@ -52,8 +52,8 @@ module GithubHerokuDeployer
 
     def clone
       wrapper = ssh_wrapper
-      @logger.info "cloning #{@github_repo} to #{folder}"
-      run "env #{wrapper.git_ssh} git clone #{@github_repo} #{folder}"
+      @logger.info "cloning #{@bitbucket_repo_url} to #{folder}"
+      run "env #{wrapper.git_ssh} git clone #{@bitbucket_repo_url} #{folder}"
     ensure
       wrapper.unlink
     end
@@ -88,7 +88,7 @@ module GithubHerokuDeployer
       if status == 0
         @logger.info result
       else
-        raise GithubHerokuDeployer::CommandException, result
+        raise GithubBitbucketDeployer::CommandException, result
       end
     end
   end

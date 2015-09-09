@@ -1,11 +1,6 @@
-module GithubHerokuDeployer
+module GithubBitbucketDeployer
   class Configuration
     OPTIONS = {
-      github_repo: ENV["GITHUB_REPO"],
-      heroku_api_key: ENV["HEROKU_API_KEY"],
-      heroku_app_name: ENV["HEROKU_APP_NAME"],
-      heroku_repo: ENV["HEROKU_REPO"],
-      heroku_username: ENV["HEROKU_USERNAME"],
       id_rsa: ENV["ID_RSA"],
       logger: ::Logger.new(STDOUT),
       repo_dir: ENV["REPO_DIR"]
@@ -50,7 +45,7 @@ module GithubHerokuDeployer
     def validate_presence(options)
       OPTIONS.each_pair do |key, value|
         if options[key].nil?
-          raise GithubHerokuDeployer::ConfigurationException, "#{key} is missing"
+          raise GithubBitbucketDeployer::ConfigurationException, "#{key} is missing"
         end
       end
     end
