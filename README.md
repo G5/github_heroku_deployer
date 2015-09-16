@@ -1,9 +1,9 @@
-# Github Heroku Deployer
+# Github Bitbucket Deployer
 
-[![Build Status](https://travis-ci.org/G5/github_heroku_deployer.png?branch=master)](https://travis-ci.org/G5/github_heroku_deployer)
-[![Code Climate](https://codeclimate.com/github/G5/github_heroku_deployer.png)](https://codeclimate.com/github/G5/github_heroku_deployer)
+[![Build Status](https://travis-ci.org/G5/github_bitbucket_deployer.png?branch=master)](https://travis-ci.org/G5/github_bitbucket_deployer)
+[![Code Climate](https://codeclimate.com/github/G5/github_bitbucket_deployer.png)](https://codeclimate.com/github/G5/github_bitbucket_deployer)
 
-Ruby gem to deploy public and private Github repos to Heroku
+Ruby gem to deploy public and private Github repos to Bitbucket
 
 
 ## Current Version
@@ -13,8 +13,6 @@ Ruby gem to deploy public and private Github repos to Heroku
 
 ## Requirements
 
-* ["heroku_api", "~> 0.3.5"](http://rubygems.org/gems/heroku-api)
-* ["platform-api", "~> 0.2"](http://rubygems.org/gems/platform-api)
 * ["git", "~> 1.2.5"](http://rubygems.org/gems/git)
 * ["git-ssh-wrapper", "~> 0.1.0"](http://rubygems.org/gems/git-ssh-wrapper)
 
@@ -26,7 +24,7 @@ Ruby gem to deploy public and private Github repos to Heroku
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'github_heroku_deployer'
+gem 'github_bitbucket_deployer'
 ```
 
 ### Manual
@@ -34,7 +32,7 @@ gem 'github_heroku_deployer'
 Or install it yourself:
 
 ```bash
-gem install github_heroku_deployer
+gem install github_bitbucket_deployer
 ```
 
 
@@ -43,12 +41,7 @@ gem install github_heroku_deployer
 Set defaults in an initializer, defaults are shown:
 
 ```ruby
-GithubHerokuDeployer.configure do |config|
-  config.github_repo     = ENV["GITHUB_REPO"]
-  config.heroku_api_key  = ENV["HEROKU_API_KEY"]
-  config.heroku_app_name = ENV["HEROKU_APP_NAME"]
-  config.heroku_repo     = ENV["HEROKU_REPO"]
-  config.heroku_username = ENV["HEROKU_USERNAME"]
+GithubBitbucketDeployer.configure do |config|
   config.id_rsa          = ENV["ID_RSA"]
   config.logger          = Logger.new(STDOUT)
 end
@@ -57,36 +50,31 @@ end
 Export you environment variables wherever you do that:
 
 ```bash
-export GITHUB_REPO=git@github.com:your/repo.git
-export HEROKU_API_KEY=heroku_api_key
-export HEROKU_APP_NAME=heroku_app_name
-export HEROKU_REPO=git@heroku.com:repo.git
-export HEROKU_USERNAME=heroku_username
 export ID_RSA=id_rsa
 ```
 
-Create Heroku App:
+Create Bitbucket App:
 
 ```ruby
-  GithubHerokuDeployer.create
+  GithubBitbucketDeployer.create
 ```
 
 Deploy:
 
 ```ruby
-  GithubHerokuDeployer.deploy
+  GithubBitbucketDeployer.deploy
 ```
 
 Override defaults:
 
 ```ruby
-  GithubHerokuDeployer.deploy(github_repo: github_repo)
+  GithubBitbucketDeployer.deploy(github_repo: github_repo)
 ```
 
 Manipulate Repo:
 
 ```ruby
-  GithubHerokuDeployer.deploy(github_repo: github_repo) { |repo| repo.add "/path/to/file" }
+  GithubBitbucketDeployer.deploy(github_repo: github_repo) { |repo| repo.add "/path/to/file" }
 ```
 
 
@@ -108,21 +96,14 @@ Manipulate Repo:
 7. Create new Pull Request
 
 If you find bugs, have feature requests or questions, please
-[file an issue](https://github.com/G5/github_heroku_deployer/issues).
+[file an issue](https://github.com/G5/github_bitbucket_deployer/issues).
 
 
 ## Specs
 
 Export environment variables
 ```bash
-export GITHUB_REPO=git@github.com:G5/static-sinatra-prototype.git
-export HEROKU_API_KEY=heroku_api_key
-export HEROKU_APP_NAME=static-sinatra-prototype
-export HEROKU_REPO=git@heroku.com:static-sinatra-prototype.git
-export HEROKU_USERNAME=heroku_username
 export ID_RSA=id_rsa
-export PRIVATE_GITHUB_REPO=git@github.com:g5search/g5-client-location.git
-export PUBLIC_GITHUB_REPO=git@github.com:G5/static-sinatra-prototype.git
 ```
 
 

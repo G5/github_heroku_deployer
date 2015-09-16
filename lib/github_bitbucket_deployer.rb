@@ -23,7 +23,6 @@ module GithubBitbucketDeployer
     #
     # @example
     #   GithubBitbucketDeployer.configure do |config|
-    #     config.github_repo     = ENV["GITHUB_REPO"]
     #     config.id_rsa          = ENV["ID_RSA"]
     #     config.logger          = Logger.new(STDOUT)
     #   end

@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'github_heroku_deployer/git'
+require 'github_bitbucket_deployer/git'
 
-describe GithubHerokuDeployer::Git do
+describe GithubBitbucketDeployer::Git do
 end

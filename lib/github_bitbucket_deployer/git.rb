@@ -6,13 +6,14 @@ module GithubBitbucketDeployer
 
     def initialize(options)
       @bitbucket_repo_url = options[:bitbucket_repo_url]
-      @bitbucket_repo_name = options[:bitbucket_repo_name]
+      @git_repo_name = options[:git_repo_name]
       @id_rsa = options[:id_rsa]
       @logger = options[:logger]
       @repo_dir = options[:repo_dir]
     end
 
     def push_app_to_bitbucket(remote="bitbucket", branch="master", &block)
+      @logger.info "push_app_to_bitbucket"
       wrapper = ssh_wrapper
       run "cd #{repo.dir}; git remote rm #{remote}" if repo.remote(remote).url
       repo.add_remote(remote, @bitbucket_repo_url)
@@ -28,6 +29,7 @@ module GithubBitbucketDeployer
     end
 
     def setup_repo
+      @logger.info "setup_repo"
       clone_or_pull
       open
     end
@@ -37,13 +39,14 @@ module GithubBitbucketDeployer
     end
 
     def setup_folder
-      folder = File.join(@repo_dir, Zlib.crc32(@bitbucket_repo_name).to_s)
-      FileUtils.mkdir_p(folder)
-      folder
+      @logger.info "setup_folder"
+      folder = File.join(@repo_dir, Zlib.crc32(@git_repo_name).to_s)
+      FileUtils.mkdir_p(folder).first
     end
 
     def clone_or_pull
-      !exists_locally? ? clone : pull
+      @logger.info "clone_or_pull"
+      exists_locally? ? pull : clone
     end
 
     def exists_locally?
@@ -51,14 +54,16 @@ module GithubBitbucketDeployer
     end
 
     def clone
+      @logger.info "git clone"
       wrapper = ssh_wrapper
       @logger.info "cloning #{@bitbucket_repo_url} to #{folder}"
-      run "env #{wrapper.git_ssh} git clone #{@bitbucket_repo_url} #{folder}"
+      run "unset GIT_WORK_TREE; env #{wrapper.git_ssh} git clone #{@bitbucket_repo_url} #{folder}"
     ensure
       wrapper.unlink
     end
 
     def pull
+      @logger.info "git pull"
       wrapper = ssh_wrapper
       dir = Dir.pwd # need to cd back to here
       @logger.info "pulling from #{folder}"
@@ -68,6 +73,7 @@ module GithubBitbucketDeployer
     end
 
     def open
+      @logger.info "git open"
       ::Git.open(folder)
     end
 
@@ -83,13 +89,15 @@ module GithubBitbucketDeployer
     end
 
     def run(command)
-      result = `#{command} 2>&1`
-      status = $?.exitstatus
-      if status == 0
-        @logger.info result
+      @logger.info "git run command: #{command}"
+      result = system("#{command} 2>&1")
+      sleep 20
+      if result
+        @logger.info $?.to_s
       else
-        raise GithubBitbucketDeployer::CommandException, result
+        raise GithubBitbucketDeployer::CommandException, $?.to_s
       end
     end
   end
 end
+
