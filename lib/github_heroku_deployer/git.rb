@@ -53,6 +53,7 @@ module GithubHerokuDeployer
     def clone
       wrapper = ssh_wrapper
       @logger.info "cloning #{@github_repo} to #{folder}"
+      @logger.info "unsetting GIT_WORK_TREE"
       run "unset GIT_WORK_TREE; env #{wrapper.git_ssh} git clone #{@github_repo} #{folder}"
     ensure
       wrapper.unlink
