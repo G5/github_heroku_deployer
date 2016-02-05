@@ -144,5 +144,14 @@ describe GithubHerokuDeployer do
       end
     end
   end
+
+  describe "::deploy_and_create" do
+    subject { GithubHerokuDeployer.create_and_deploy }
+    it "both creates and deploys" do
+      GithubHerokuDeployer.should_receive(:create).exactly(1).times
+      GithubHerokuDeployer.should_receive(:deploy).exactly(1).times
+      subject
+    end
+  end
 end
 
