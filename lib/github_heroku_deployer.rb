@@ -49,6 +49,11 @@ module GithubHerokuDeployer
       true
     end
 
+    def create_and_deploy(options={}, &block)
+      create(options, &block)
+      deploy(options, &block)
+    end
+
     def heroku_restart(options={})
       options = configuration.merge(options)
       validate_options(options)
