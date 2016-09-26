@@ -3,6 +3,7 @@ require "git-ssh-wrapper"
 
 module GithubBitbucketDeployer
   class Git
+    attr_reader :bitbucket_repo_url, :git_repo_name, :id_rsa, :logger, :repo_dir
 
     def initialize(options)
       @bitbucket_repo_url = options[:bitbucket_repo_url]
