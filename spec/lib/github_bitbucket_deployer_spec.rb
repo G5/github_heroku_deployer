@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'github_bitbucket_deployer'
 
 describe GithubBitbucketDeployer do
   it { is_expected.to respond_to(:configuration) }

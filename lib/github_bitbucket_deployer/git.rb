@@ -83,6 +83,13 @@ module GithubBitbucketDeployer
       file.path
     end
 
+    private
+    def setup_folder
+      @logger.info "setup_folder"
+      folder = File.join(@repo_dir, Zlib.crc32(@git_repo_name).to_s)
+      FileUtils.mkdir_p(folder).first
+    end
+
     def run(command)
       @logger.info "git run command: #{command}"
       result = system("#{command} 2>&1")
@@ -93,13 +100,6 @@ module GithubBitbucketDeployer
         raise GithubBitbucketDeployer::CommandException, $?.to_s
       end
     end
-
-    private
-    def setup_folder
-      @logger.info "setup_folder"
-      folder = File.join(@repo_dir, Zlib.crc32(@git_repo_name).to_s)
-      FileUtils.mkdir_p(folder).first
-    end
-   end
+  end
 end
 

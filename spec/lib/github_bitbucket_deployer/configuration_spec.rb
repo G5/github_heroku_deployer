@@ -1,6 +1,4 @@
 require 'spec_helper'
-require 'github_bitbucket_deployer'
-require 'github_bitbucket_deployer/configuration'
 
 describe GithubBitbucketDeployer::Configuration do
   it { should respond_to :"[]" }

@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'github_bitbucket_deployer/git'
 
 describe GithubBitbucketDeployer::Git do
   let(:git) { described_class.new(options) }
@@ -132,5 +131,30 @@ describe GithubBitbucketDeployer::Git do
 
       it { is_expected.to be false }
     end
+  end
+
+  describe '#pull', :fakefs do
+    subject(:pull) { git.pull }
+
+    before { allow(git).to receive(:run).with(kind_of(String)).and_return(true) }
+
+    it 'changes into the directory' do
+      pull
+      expect(git).to have_received(:run).with(/^cd #{local_repo_folder};/)
+    end
+
+    it 'pulls from bitbucket using the git ssh wrapper' do
+      expect(git).to receive(:run).with(/env GIT_SSH=\S+ git pull;/)
+      pull
+    end
+
+    it 'changes back to original dir' do
+      expect(git).to receive(:run).with(/cd #{Dir.pwd}$/)
+      pull
+    end
+  end
+
+  describe '#clone' do
+    # TODO
   end
 end
