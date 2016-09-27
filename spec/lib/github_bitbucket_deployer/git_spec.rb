@@ -14,6 +14,8 @@ describe GithubBitbucketDeployer::Git do
 
   let(:repo_dir) { '/my_home/projects' }
   let(:git_repo_name) { 'my_repo' }
+  let(:local_repo_folder) { Zlib.crc32(git_repo_name) }
+
   let(:logger) { double('logger', info: true) }
 
   describe '#initialize' do
@@ -79,8 +81,6 @@ describe GithubBitbucketDeployer::Git do
   describe '#folder', :fakefs do
     subject(:folder) { git.folder }
 
-    let(:local_repo_folder) { Zlib.crc32(git_repo_name) }
-
     context 'when repo_dir exists' do
       before { FileUtils.mkdir_p(repo_dir) }
 
@@ -99,6 +99,38 @@ describe GithubBitbucketDeployer::Git do
       it 'creates the absolute path to the local folder' do
         expect(File).to exist(folder)
       end
+    end
+  end
+
+  describe '#exists_locally?', :fakefs do
+    subject(:exists_locally) { git.exists_locally? }
+
+    let(:absolute_path) { "#{repo_dir}/#{local_repo_folder}" }
+
+    context 'when local folder exists' do
+      before { FileUtils.mkdir_p(absolute_path) }
+
+      context 'with a git repo' do
+        before do
+          git_dir = "#{absolute_path}/.git"
+          FileUtils.mkdir(git_dir)
+          FileUtils.touch("#{git_dir}/config") 
+        end
+
+        it { is_expected.to be true }
+      end
+
+      context 'without a git repo' do
+        before { FileUtils.rm_rf("#{absolute_path}/.git") }
+
+        it { is_expected.to be false }
+      end
+    end
+
+    context 'when local folder does not exist' do
+      before { FileUtils.rm_rf(repo_dir) }
+
+      it { is_expected.to be false }
     end
   end
 end
