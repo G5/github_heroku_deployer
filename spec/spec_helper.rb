@@ -3,7 +3,7 @@ SimpleCov.start
 
 require 'rubygems'
 require 'rspec'
-require 'rspec/autorun'
+require 'fakefs/spec_helpers'
 
 RSpec.configure do |config|
   config.order = "random"

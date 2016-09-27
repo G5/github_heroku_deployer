@@ -19,7 +19,6 @@ Gem::Specification.new do |gem|
   gem.add_dependency "git-ssh-wrapper", "~> 0.1.0"
 
   gem.add_development_dependency "simplecov", "~> 0.7.1"
-  gem.add_development_dependency "rspec", "~> 2.11.0"
-  gem.add_development_dependency "guard-rspec", "~> 2.1.0"
-  gem.add_development_dependency "rb-fsevent", "~> 0.9.2"
+  gem.add_development_dependency "rspec", "~> 3.0"
+  gem.add_development_dependency "fakefs", "~> 0.9.1"
 end
