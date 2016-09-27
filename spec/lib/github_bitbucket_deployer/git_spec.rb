@@ -6,11 +6,15 @@ describe GithubBitbucketDeployer::Git do
 
   let(:options) do
     { bitbucket_repo_url: 'git@bitbucket.org:g5dev/some_repo.git',
-      git_repo_name: 'some_repo',
+      git_repo_name: git_repo_name,
       id_rsa: 'some-crazy-value-i-dunno',
-      logger: Logger.new(STDOUT),
-      repo_dir: 'say/what' }
+      logger: logger,
+      repo_dir: repo_dir }
   end
+
+  let(:repo_dir) { '/my_home/projects' }
+  let(:git_repo_name) { 'my_repo' }
+  let(:logger) { double('logger', info: true) }
 
   describe '#initialize' do
     subject { git }
@@ -47,7 +51,7 @@ describe GithubBitbucketDeployer::Git do
       end
 
       it 'sets the git_repo_name' do
-        expect(git.git_repo_name).to eq(options[:git_repo_name])
+        expect(git.git_repo_name).to eq(git_repo_name)
       end
 
       it 'sets the id_rsa' do
@@ -59,7 +63,41 @@ describe GithubBitbucketDeployer::Git do
       end
 
       it 'sets the repo_dir' do
-        expect(git.repo_dir).to eq(options[:repo_dir])
+        expect(git.repo_dir).to eq(repo_dir)
+      end
+    end
+  end
+
+  describe '#push_app_to_bitbucket' do
+    # TODO
+  end
+
+  describe '#repo' do
+    # TODO
+  end
+
+  describe '#folder', :fakefs do
+    subject(:folder) { git.folder }
+
+    let(:local_repo_folder) { Zlib.crc32(git_repo_name) }
+
+    context 'when repo_dir exists' do
+      before { FileUtils.mkdir_p(repo_dir) }
+
+      it { is_expected.to eq("#{repo_dir}/#{local_repo_folder}") }
+
+      it 'creates the local folder' do
+        expect(File).to exist(folder)
+      end
+    end
+
+    context 'when repo_dir does not exist' do
+      before { FileUtils.rm_rf(repo_dir) }
+
+      it { is_expected.to eq("#{repo_dir}/#{local_repo_folder}") }
+
+      it 'creates the absolute path to the local folder' do
+        expect(File).to exist(folder)
       end
     end
   end

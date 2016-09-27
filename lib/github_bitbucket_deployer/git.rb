@@ -39,12 +39,6 @@ module GithubBitbucketDeployer
       @folder ||= setup_folder
     end
 
-    def setup_folder
-      @logger.info "setup_folder"
-      folder = File.join(@repo_dir, Zlib.crc32(@git_repo_name).to_s)
-      FileUtils.mkdir_p(folder).first
-    end
-
     def clone_or_pull
       @logger.info "clone_or_pull"
       exists_locally? ? pull : clone
@@ -99,6 +93,13 @@ module GithubBitbucketDeployer
         raise GithubBitbucketDeployer::CommandException, $?.to_s
       end
     end
-  end
+
+    private
+    def setup_folder
+      @logger.info "setup_folder"
+      folder = File.join(@repo_dir, Zlib.crc32(@git_repo_name).to_s)
+      FileUtils.mkdir_p(folder).first
+    end
+   end
 end
 
