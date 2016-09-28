@@ -76,13 +76,6 @@ module GithubBitbucketDeployer
       GitSSHWrapper.new(private_key_path: id_rsa_path)
     end
 
-    def id_rsa_path
-      file = Tempfile.new("id_rsa")
-      file.write(@id_rsa)
-      file.rewind
-      file.path
-    end
-
     private
     def setup_folder
       @logger.info "setup_folder"
@@ -99,6 +92,13 @@ module GithubBitbucketDeployer
       else
         raise GithubBitbucketDeployer::CommandException, $?.to_s
       end
+    end
+
+    def id_rsa_path
+      file = Tempfile.new("id_rsa")
+      file.write(@id_rsa)
+      file.rewind
+      file.path
     end
   end
 end

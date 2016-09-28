@@ -6,16 +6,16 @@ describe GithubBitbucketDeployer::Git do
   let(:options) do
     { bitbucket_repo_url: 'git@bitbucket.org:g5dev/some_repo.git',
       git_repo_name: git_repo_name,
-      id_rsa: 'some-crazy-value-i-dunno',
+      id_rsa: id_rsa,
       logger: logger,
       repo_dir: repo_dir }
   end
 
-  let(:repo_dir) { '/my_home/projects' }
   let(:git_repo_name) { 'my_repo' }
   let(:local_repo_folder) { Zlib.crc32(git_repo_name) }
-
+  let(:id_rsa) { 'this is the value of my key' }
   let(:logger) { double('logger', info: true) }
+  let(:repo_dir) { '/my_home/projects' }
 
   describe '#initialize' do
     subject { git }
@@ -140,11 +140,11 @@ describe GithubBitbucketDeployer::Git do
 
     it 'changes into the directory' do
       pull
-      expect(git).to have_received(:run).with(/^cd #{local_repo_folder};/)
+      expect(git).to have_received(:run).with(/^cd #{repo_dir}\/#{local_repo_folder};/)
     end
 
     it 'pulls from bitbucket using the git ssh wrapper' do
-      expect(git).to receive(:run).with(/env GIT_SSH=\S+ git pull;/)
+      expect(git).to receive(:run).with(/env GIT_SSH='\/tmp\/git-ssh-wrapper\S+ git pull;/)
       pull
     end
 
@@ -156,5 +156,22 @@ describe GithubBitbucketDeployer::Git do
 
   describe '#clone' do
     # TODO
+  end
+
+  describe '#ssh_wrapper', :fakefs do
+    subject(:ssh_wrapper) { git.ssh_wrapper }
+
+    it { is_expected.to be_kind_of(GitSSHWrapper) }
+
+    it 'writes the private key to a tempfile' do
+      ssh_wrapper
+      tmpfile = Dir.glob("#{Dir.tmpdir}/id_rsa*").first
+      expect(File.read(tmpfile)).to eq(id_rsa)
+    end
+
+    it 'initializes an ssh wrapper with the private key' do
+      expect(GitSSHWrapper).to receive(:new).with(private_key_path: /^#{Dir.tmpdir}\/id_rsa/)
+      ssh_wrapper
+    end
   end
 end
