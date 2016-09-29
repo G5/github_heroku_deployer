@@ -4,18 +4,21 @@ describe GithubBitbucketDeployer::Git do
   let(:git) { described_class.new(options) }
 
   let(:options) do
-    { bitbucket_repo_url: 'git@bitbucket.org:g5dev/some_repo.git',
+    { bitbucket_repo_url: bitbucket_repo_url,
       git_repo_name: git_repo_name,
       id_rsa: id_rsa,
       logger: logger,
       repo_dir: repo_dir }
   end
 
-  let(:git_repo_name) { 'my_repo' }
+  let(:bitbucket_repo_url) { 'git@bitbucket.org:g5dev/some_repo.git' }
+  let(:git_repo_name) { 'some_repo' }
   let(:local_repo_folder) { Zlib.crc32(git_repo_name) }
   let(:id_rsa) { 'this is the value of my key' }
   let(:logger) { double('logger', info: true) }
   let(:repo_dir) { '/my_home/projects' }
+
+  before { allow(git).to receive(:run).with(kind_of(String)).and_return(true) }
 
   describe '#initialize' do
     subject { git }
@@ -136,15 +139,18 @@ describe GithubBitbucketDeployer::Git do
   describe '#pull', :fakefs do
     subject(:pull) { git.pull }
 
-    before { allow(git).to receive(:run).with(kind_of(String)).and_return(true) }
-
     it 'changes into the directory' do
       pull
       expect(git).to have_received(:run).with(/^cd #{repo_dir}\/#{local_repo_folder};/)
     end
 
-    it 'pulls from bitbucket using the git ssh wrapper' do
-      expect(git).to receive(:run).with(/env GIT_SSH='\/tmp\/git-ssh-wrapper\S+ git pull;/)
+    it 'interacts with bitbucket using the git ssh wrapper' do
+      expect(git).to receive(:run).with(/env GIT_SSH='\/tmp\/git-ssh-wrapper\S+'/)
+      pull
+    end
+
+    it 'pulls from bitbucket' do
+      expect(git).to receive(:run).with(/git pull/)
       pull
     end
 
@@ -154,8 +160,23 @@ describe GithubBitbucketDeployer::Git do
     end
   end
 
-  describe '#clone' do
-    # TODO
+  describe '#clone', :fakefs do
+    subject(:clone) { git.clone }
+
+    it 'unsets the git work tree' do
+      expect(git).to receive(:run).with(/^unset GIT_WORK_TREE/)
+      clone
+    end
+
+    it 'interacts with bitbucket via the git ssh wrapper' do
+      expect(git).to receive(:run).with(/env GIT_SSH='\/tmp\/git-ssh-wrapper\S+'/)
+      clone
+    end
+
+    it 'clones the bitbucket repo into the local folder' do
+      expect(git).to receive(:run).with(/git clone #{bitbucket_repo_url} #{repo_dir}\/#{local_repo_folder}/)
+      clone
+    end
   end
 
   describe '#ssh_wrapper', :fakefs do
