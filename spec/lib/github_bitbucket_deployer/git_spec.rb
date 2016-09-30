@@ -17,6 +17,7 @@ describe GithubBitbucketDeployer::Git do
   let(:id_rsa) { 'this is the value of my key' }
   let(:logger) { double('logger', info: true) }
   let(:repo_dir) { '/my_home/projects' }
+  let(:local_absolute_path) { "#{repo_dir}/#{local_repo_folder}" }
 
   before { allow(git).to receive(:run).with(kind_of(String)).and_return(true) }
 
@@ -86,7 +87,7 @@ describe GithubBitbucketDeployer::Git do
     context 'when repo_dir exists' do
       before { FileUtils.mkdir_p(repo_dir) }
 
-      it { is_expected.to eq("#{repo_dir}/#{local_repo_folder}") }
+      it { is_expected.to eq(local_absolute_path) }
 
       it 'creates the local folder' do
         expect(File).to exist(folder)
@@ -96,7 +97,7 @@ describe GithubBitbucketDeployer::Git do
     context 'when repo_dir does not exist' do
       before { FileUtils.rm_rf(repo_dir) }
 
-      it { is_expected.to eq("#{repo_dir}/#{local_repo_folder}") }
+      it { is_expected.to eq(local_absolute_path) }
 
       it 'creates the absolute path to the local folder' do
         expect(File).to exist(folder)
@@ -107,14 +108,12 @@ describe GithubBitbucketDeployer::Git do
   describe '#exists_locally?', :fakefs do
     subject(:exists_locally) { git.exists_locally? }
 
-    let(:absolute_path) { "#{repo_dir}/#{local_repo_folder}" }
-
     context 'when local folder exists' do
-      before { FileUtils.mkdir_p(absolute_path) }
+      before { FileUtils.mkdir_p(local_absolute_path) }
 
       context 'with a git repo' do
         before do
-          git_dir = "#{absolute_path}/.git"
+          git_dir = "#{local_absolute_path}/.git"
           FileUtils.mkdir(git_dir)
           FileUtils.touch("#{git_dir}/config") 
         end
@@ -123,7 +122,7 @@ describe GithubBitbucketDeployer::Git do
       end
 
       context 'without a git repo' do
-        before { FileUtils.rm_rf("#{absolute_path}/.git") }
+        before { FileUtils.rm_rf("#{local_absolute_path}/.git") }
 
         it { is_expected.to be false }
       end
@@ -141,7 +140,7 @@ describe GithubBitbucketDeployer::Git do
 
     it 'changes into the directory' do
       pull
-      expect(git).to have_received(:run).with(/^cd #{repo_dir}\/#{local_repo_folder};/)
+      expect(git).to have_received(:run).with(/^cd #{local_absolute_path};/)
     end
 
     it 'interacts with bitbucket using the git ssh wrapper' do
@@ -174,8 +173,33 @@ describe GithubBitbucketDeployer::Git do
     end
 
     it 'clones the bitbucket repo into the local folder' do
-      expect(git).to receive(:run).with(/git clone #{bitbucket_repo_url} #{repo_dir}\/#{local_repo_folder}/)
+      expect(git).to receive(:run).with(/git clone #{bitbucket_repo_url} #{local_absolute_path}/)
       clone
+    end
+  end
+
+  # TODO: rename this method something more generic (e.g. update_working_copy)
+  describe '#clone_or_pull', :fakefs do
+    subject(:clone_or_pull) { git.clone_or_pull }
+
+    context 'when local repo already exists' do
+      before do
+        git_dir = "#{local_absolute_path}/.git"
+        FileUtils.mkdir_p(git_dir)
+        FileUtils.touch("#{git_dir}/config")
+      end
+
+      it 'pulls' do
+        expect(git).to receive(:run).with(/git pull/)
+        clone_or_pull
+      end
+    end
+
+    context 'without existing local repo' do
+      it 'clones' do
+        expect(git).to receive(:run).with(/git clone/)
+        clone_or_pull
+      end
     end
   end
 
@@ -193,6 +217,22 @@ describe GithubBitbucketDeployer::Git do
     it 'initializes an ssh wrapper with the private key' do
       expect(GitSSHWrapper).to receive(:new).with(private_key_path: /^#{Dir.tmpdir}\/id_rsa/)
       ssh_wrapper
+    end
+  end
+
+  describe '#open', :fakefs do
+    subject(:open) { git.open }
+
+    before do
+      git_dir = "#{local_absolute_path}/.git"
+      FileUtils.mkdir_p(git_dir)
+      FileUtils.touch("#{git_dir}/config")
+    end
+
+    it { is_expected.to be_kind_of Git::Base }
+
+    it 'points to the local working dir' do
+      expect(open.dir.path).to eq(local_absolute_path)
     end
   end
 end
