@@ -29,12 +29,6 @@ module GithubBitbucketDeployer
       @repo ||= setup_repo
     end
 
-    def setup_repo
-      @logger.info "setup_repo"
-      clone_or_pull
-      open
-    end
-
     def folder
       @folder ||= setup_folder
     end
@@ -99,6 +93,12 @@ module GithubBitbucketDeployer
       file.write(@id_rsa)
       file.rewind
       file.path
+    end
+
+    def setup_repo
+      @logger.info "setup_repo"
+      clone_or_pull
+      open
     end
   end
 end

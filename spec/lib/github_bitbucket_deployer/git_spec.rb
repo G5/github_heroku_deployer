@@ -77,8 +77,79 @@ describe GithubBitbucketDeployer::Git do
     # TODO
   end
 
-  describe '#repo' do
-    # TODO
+  describe '#repo', :fakefs do
+    subject(:repo) { git.repo }
+
+    let(:git_dir) { "#{local_absolute_path}/.git" }
+
+    context 'when repo_dir exists' do
+      before { FileUtils.mkdir_p(repo_dir) }
+
+      context 'with a git repo' do
+        before do
+          FileUtils.mkdir_p(git_dir)
+          FileUtils.touch("#{git_dir}/config") 
+        end
+
+        it { is_expected.to be_kind_of(Git::Base) }
+
+        it 'points to the local working dir' do
+          expect(repo.dir.path).to eq(local_absolute_path)
+        end
+
+        it 'pulls into the existing repo' do
+          expect(git).to receive(:run).with(/git pull/)
+          repo
+        end
+      end
+
+      context 'without a git repo' do
+        before do
+          FileUtils.rm_rf(local_absolute_path)
+          allow(git).to receive(:run).with(/git clone/) do
+            FileUtils.mkdir_p(git_dir)
+            FileUtils.touch("#{git_dir}/config")
+          end
+        end
+
+        it { is_expected.to be_kind_of(Git::Base) }
+
+        it 'points to the local working dir' do
+          expect(repo.dir.path).to eq(local_absolute_path)
+        end
+
+        it 'clones the repo locally' do
+          expect(git).to receive(:run).with(/git clone #{bitbucket_repo_url} #{local_absolute_path}/)
+          repo
+        end
+      end
+    end
+
+    context 'when repo_dir does not exist' do
+      before do
+        FileUtils.rm_rf(repo_dir)
+        allow(git).to receive(:run).with(/git clone/) do
+          FileUtils.mkdir_p(git_dir)
+          FileUtils.touch("#{git_dir}/config")
+        end
+      end
+
+      it 'creates the local repo dir' do
+        repo
+        expect(File).to exist(repo_dir)
+      end
+
+      it { is_expected.to be_kind_of(Git::Base) }
+
+      it 'points to the local working dir' do
+        expect(repo.dir.path).to eq(local_absolute_path)
+      end
+
+      it 'clones the repo locally' do
+        expect(git).to receive(:run).with(/git clone #{bitbucket_repo_url} #{local_absolute_path}/)
+        repo
+      end
+    end
   end
 
   describe '#folder', :fakefs do
