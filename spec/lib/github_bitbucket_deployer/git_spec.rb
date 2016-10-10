@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe GithubBitbucketDeployer::Git do
+  include GitHelpers
+
   let(:git) { described_class.new(options) }
 
   let(:options) do
@@ -17,9 +19,21 @@ describe GithubBitbucketDeployer::Git do
   let(:id_rsa) { 'this is the value of my key' }
   let(:logger) { double('logger', info: true) }
   let(:repo_dir) { '/my_home/projects' }
-  let(:local_absolute_path) { "#{repo_dir}/#{local_repo_folder}" }
+  let(:working_dir) { "#{repo_dir}/#{local_repo_folder}" }
 
-  before { allow(git).to receive(:run).with(kind_of(String)).and_return(true) }
+  before do
+    allow(git).to receive(:run).with(a_kind_of(String)).and_return(true)
+  end
+
+  let(:git_repo) do
+    instance_double(Git::Base, remote: git_remote,
+                               dir: working_dir,
+                               add_remote: true)
+  end
+
+  let(:git_remote) do
+    instance_double(Git::Remote, url: bitbucket_repo_url)
+  end
 
   describe '#initialize' do
     subject { git }
@@ -73,28 +87,199 @@ describe GithubBitbucketDeployer::Git do
     end
   end
 
-  describe '#push_app_to_bitbucket' do
-    # TODO
+  describe '#push_app_to_bitbucket', :fakefs do
+    subject { push_app }
+
+    before { allow(Git).to receive(:open).and_return(git_repo) }
+
+    context 'with default arguments' do
+      let(:push_app) { git.push_app_to_bitbucket }
+
+      context 'when local repo already exists' do
+        before { create_local_repo(git_repo_name, working_dir) }
+        before { add_git_remote(unrelated_remote, working_dir) }
+        let(:unrelated_remote) { 'heroku' }
+
+        it 'pulls from the remote repo' do
+          expect(git).to receive(:run).with(/git pull/)
+          push_app
+        end
+
+        context 'when bitbucket remote exists' do
+          before { add_git_remote(existing_remote, working_dir) }
+          let(:existing_remote) { 'bitbucket' }
+
+          it 'removes the existing remote' do
+            expect(git).to receive(:run)
+              .with(/cd #{working_dir}; git remote rm #{existing_remote}/)
+            push_app
+          end
+
+          it 'does not remove the unrelated remote' do
+            expect(git).to_not receive(:run)
+              .with(/git remote rm #{unrelated_remote}/)
+            push_app
+          end
+
+          it 'creates the bitbucket remote' do
+            expect(git_repo).to receive(:add_remote)
+              .with('bitbucket', bitbucket_repo_url)
+            push_app
+          end
+
+          it 'force pushes master to bitbucket' do
+            expect(git).to receive(:run).with(/git push -f bitbucket master/)
+            push_app
+          end
+        end
+
+        context 'when bitbucket remote does not exist' do
+          let(:git_remote) { instance_double(Git::Remote, url: nil) }
+
+          it 'does not remove any remotes' do
+            expect(git).to_not receive(:run).with(/git remote rm/)
+            push_app
+          end
+
+          it 'creates the bitbucket remote' do
+            expect(git_repo).to receive(:add_remote)
+              .with('bitbucket', bitbucket_repo_url)
+            push_app
+          end
+
+          it 'force pushes master to bitbucket' do
+            expect(git).to receive(:run).with(/git push -f bitbucket master/)
+            push_app
+          end
+        end
+      end
+
+      context 'when local repo does not exist' do
+        let(:git_remote) { instance_double(Git::Remote, url: nil) }
+
+        it 'clones the bitbucket repo into the local folder' do
+          expect(git).to receive(:run)
+            .with(/git clone #{bitbucket_repo_url} #{working_dir}/)
+          push_app
+        end
+
+        it 'creates the bitbucket remote' do
+          expect(git_repo).to receive(:add_remote)
+            .with('bitbucket', bitbucket_repo_url)
+          push_app
+        end
+
+        it 'force pushes master to bitbucket' do
+          expect(git).to receive(:run).with(/git push -f bitbucket master/)
+          push_app
+        end
+      end
+    end
+
+    context 'with custom arguments' do
+      let(:push_app) { git.push_app_to_bitbucket(remote, branch, &block) }
+
+      let(:remote) { 'my_git_server' }
+      let(:branch) { 'my_topic_branch' }
+      let(:block) { lambda { |arg| @block_arg = arg } }
+
+      context 'when local git repo exists' do
+        before { create_local_repo(git_repo_name, working_dir) }
+
+        it 'pulls from the remote repo' do
+          expect(git).to receive(:run).with(/git pull/)
+          push_app
+        end
+
+        context 'when custom remote already exists' do
+          before do
+            allow(git_repo).to receive(:remote).with(remote).and_return(git_remote)
+          end
+
+          it 'removes the old remote' do
+            expect(git).to receive(:run).with(/git remote rm #{remote}/)
+            push_app
+          end
+
+          it 'creates the new remote' do
+            expect(git_repo).to receive(:add_remote).with(remote, bitbucket_repo_url)
+            push_app
+          end
+
+          it 'yields to the block' do
+            expect { push_app }.to change { @block_arg }.from(nil).to(git_repo)
+          end
+
+          it 'forces pushes the branch' do
+            expect(git).to receive(:run).with(/git push -f #{remote} #{branch}/)
+            push_app
+          end
+        end
+
+        context 'when custom remote does not exist' do
+          before do
+            allow(git_repo).to receive(:remote).with(remote).and_return(git_remote)
+          end
+          let(:git_remote) { instance_double(Git::Remote, url: nil) }
+
+          it 'does not remove any remotes' do
+            expect(git).to_not receive(:run).with(/git remote rm/)
+            push_app
+          end
+
+          it 'creates the new remote' do
+            expect(git_repo).to receive(:add_remote).with(remote, bitbucket_repo_url)
+            push_app
+          end
+
+          it 'yields to the block' do
+            expect { push_app }.to change { @block_arg }.from(nil).to(git_repo)
+          end
+
+          it 'force pushes the branch' do
+            expect(git).to receive(:run).with(/git push -f #{remote} #{branch}/)
+            push_app
+          end
+        end
+      end
+
+      context 'when local git repo does not exist' do
+        it 'clones the repo' do
+          expect(git).to receive(:run).with(/git clone #{bitbucket_repo_url} #{working_dir}/)
+          push_app
+        end
+
+        it 'creates the remote' do
+          expect(git_repo).to receive(:add_remote).with(remote, bitbucket_repo_url)
+          push_app
+        end
+
+        it 'yields the repo to the block' do
+          push_app
+          expect(@block_arg).to eq(git_repo)
+        end
+
+        it 'forces pushes the branch' do
+          expect(git).to receive(:run).with(/git push -f #{remote} #{branch}/)
+          push_app
+        end
+      end
+    end
   end
 
   describe '#repo', :fakefs do
     subject(:repo) { git.repo }
 
-    let(:git_dir) { "#{local_absolute_path}/.git" }
-
     context 'when repo_dir exists' do
       before { FileUtils.mkdir_p(repo_dir) }
 
       context 'with a git repo' do
-        before do
-          FileUtils.mkdir_p(git_dir)
-          FileUtils.touch("#{git_dir}/config") 
-        end
+        before { create_local_repo(git_repo_name, working_dir) }
 
         it { is_expected.to be_kind_of(Git::Base) }
 
         it 'points to the local working dir' do
-          expect(repo.dir.path).to eq(local_absolute_path)
+          expect(repo.dir.path).to eq(working_dir)
         end
 
         it 'pulls into the existing repo' do
@@ -105,21 +290,21 @@ describe GithubBitbucketDeployer::Git do
 
       context 'without a git repo' do
         before do
-          FileUtils.rm_rf(local_absolute_path)
+          FileUtils.rm_rf(working_dir)
           allow(git).to receive(:run).with(/git clone/) do
-            FileUtils.mkdir_p(git_dir)
-            FileUtils.touch("#{git_dir}/config")
+            create_local_repo(git_repo_name, working_dir)
           end
         end
 
         it { is_expected.to be_kind_of(Git::Base) }
 
         it 'points to the local working dir' do
-          expect(repo.dir.path).to eq(local_absolute_path)
+          expect(repo.dir.path).to eq(working_dir)
         end
 
         it 'clones the repo locally' do
-          expect(git).to receive(:run).with(/git clone #{bitbucket_repo_url} #{local_absolute_path}/)
+          expect(git).to receive(:run)
+            .with(/git clone #{bitbucket_repo_url} #{working_dir}/)
           repo
         end
       end
@@ -129,8 +314,7 @@ describe GithubBitbucketDeployer::Git do
       before do
         FileUtils.rm_rf(repo_dir)
         allow(git).to receive(:run).with(/git clone/) do
-          FileUtils.mkdir_p(git_dir)
-          FileUtils.touch("#{git_dir}/config")
+          create_local_repo(git_repo_name, working_dir)
         end
       end
 
@@ -142,11 +326,12 @@ describe GithubBitbucketDeployer::Git do
       it { is_expected.to be_kind_of(Git::Base) }
 
       it 'points to the local working dir' do
-        expect(repo.dir.path).to eq(local_absolute_path)
+        expect(repo.dir.path).to eq(working_dir)
       end
 
       it 'clones the repo locally' do
-        expect(git).to receive(:run).with(/git clone #{bitbucket_repo_url} #{local_absolute_path}/)
+        expect(git).to receive(:run)
+          .with(/git clone #{bitbucket_repo_url} #{working_dir}/)
         repo
       end
     end
@@ -158,7 +343,7 @@ describe GithubBitbucketDeployer::Git do
     context 'when repo_dir exists' do
       before { FileUtils.mkdir_p(repo_dir) }
 
-      it { is_expected.to eq(local_absolute_path) }
+      it { is_expected.to eq(working_dir) }
 
       it 'creates the local folder' do
         expect(File).to exist(folder)
@@ -168,7 +353,7 @@ describe GithubBitbucketDeployer::Git do
     context 'when repo_dir does not exist' do
       before { FileUtils.rm_rf(repo_dir) }
 
-      it { is_expected.to eq(local_absolute_path) }
+      it { is_expected.to eq(working_dir) }
 
       it 'creates the absolute path to the local folder' do
         expect(File).to exist(folder)
@@ -180,20 +365,16 @@ describe GithubBitbucketDeployer::Git do
     subject(:exists_locally) { git.exists_locally? }
 
     context 'when local folder exists' do
-      before { FileUtils.mkdir_p(local_absolute_path) }
+      before { FileUtils.mkdir_p(working_dir) }
 
       context 'with a git repo' do
-        before do
-          git_dir = "#{local_absolute_path}/.git"
-          FileUtils.mkdir(git_dir)
-          FileUtils.touch("#{git_dir}/config") 
-        end
+        before { create_local_repo(git_repo_name, working_dir) }
 
         it { is_expected.to be true }
       end
 
       context 'without a git repo' do
-        before { FileUtils.rm_rf("#{local_absolute_path}/.git") }
+        before { FileUtils.rm_rf("#{working_dir}/.git") }
 
         it { is_expected.to be false }
       end
@@ -211,11 +392,12 @@ describe GithubBitbucketDeployer::Git do
 
     it 'changes into the directory' do
       pull
-      expect(git).to have_received(:run).with(/^cd #{local_absolute_path};/)
+      expect(git).to have_received(:run).with(/^cd #{working_dir};/)
     end
 
     it 'interacts with bitbucket using the git ssh wrapper' do
-      expect(git).to receive(:run).with(/env GIT_SSH='\/tmp\/git-ssh-wrapper\S+'/)
+      expect(git).to receive(:run)
+        .with(%r{env GIT_SSH='/tmp/git-ssh-wrapper\S+'})
       pull
     end
 
@@ -239,12 +421,14 @@ describe GithubBitbucketDeployer::Git do
     end
 
     it 'interacts with bitbucket via the git ssh wrapper' do
-      expect(git).to receive(:run).with(/env GIT_SSH='\/tmp\/git-ssh-wrapper\S+'/)
+      expect(git).to receive(:run)
+        .with(%r{env GIT_SSH='/tmp/git-ssh-wrapper\S+'})
       clone
     end
 
     it 'clones the bitbucket repo into the local folder' do
-      expect(git).to receive(:run).with(/git clone #{bitbucket_repo_url} #{local_absolute_path}/)
+      expect(git).to receive(:run)
+        .with(/git clone #{bitbucket_repo_url} #{working_dir}/)
       clone
     end
   end
@@ -254,11 +438,7 @@ describe GithubBitbucketDeployer::Git do
     subject(:clone_or_pull) { git.clone_or_pull }
 
     context 'when local repo already exists' do
-      before do
-        git_dir = "#{local_absolute_path}/.git"
-        FileUtils.mkdir_p(git_dir)
-        FileUtils.touch("#{git_dir}/config")
-      end
+      before { create_local_repo(git_repo_name, working_dir) }
 
       it 'pulls' do
         expect(git).to receive(:run).with(/git pull/)
@@ -267,6 +447,8 @@ describe GithubBitbucketDeployer::Git do
     end
 
     context 'without existing local repo' do
+      before { FileUtils.rm_rf(working_dir) }
+
       it 'clones' do
         expect(git).to receive(:run).with(/git clone/)
         clone_or_pull
@@ -286,7 +468,8 @@ describe GithubBitbucketDeployer::Git do
     end
 
     it 'initializes an ssh wrapper with the private key' do
-      expect(GitSSHWrapper).to receive(:new).with(private_key_path: /^#{Dir.tmpdir}\/id_rsa/)
+      expect(GitSSHWrapper).to receive(:new)
+        .with(private_key_path: %r{^#{Dir.tmpdir}/id_rsa})
       ssh_wrapper
     end
   end
@@ -294,16 +477,12 @@ describe GithubBitbucketDeployer::Git do
   describe '#open', :fakefs do
     subject(:open) { git.open }
 
-    before do
-      git_dir = "#{local_absolute_path}/.git"
-      FileUtils.mkdir_p(git_dir)
-      FileUtils.touch("#{git_dir}/config")
-    end
+    before { create_local_repo(git_repo_name, working_dir) }
 
     it { is_expected.to be_kind_of Git::Base }
 
     it 'points to the local working dir' do
-      expect(open.dir.path).to eq(local_absolute_path)
+      expect(open.dir.path).to eq(working_dir)
     end
   end
 end
