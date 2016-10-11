@@ -26,13 +26,21 @@ describe GithubBitbucketDeployer::Git do
   end
 
   let(:git_repo) do
-    instance_double(Git::Base, remote: git_remote,
-                               dir: working_dir,
-                               add_remote: true)
+    instance_double(::Git::Base, remote: git_remote,
+                                 dir: git_working_dir,
+                                 add_remote: true)
+  end
+  let(:git_remote) do
+    instance_double(::Git::Remote, url: bitbucket_repo_url)
+  end
+  let(:git_working_dir) do
+    instance_double(::Git::WorkingDirectory, path: working_dir,
+                                             to_s: working_dir)
   end
 
-  let(:git_remote) do
-    instance_double(Git::Remote, url: bitbucket_repo_url)
+  before do
+    allow(::Git).to receive(:open).and_return(git_repo)
+    allow(::Git).to receive(:clone).and_return(git_repo)
   end
 
   describe '#initialize' do
@@ -40,8 +48,6 @@ describe GithubBitbucketDeployer::Git do
 
     context 'without options' do
       let(:options) { Hash.new }
-
-      # TODO: sensible defaults
 
       it 'has no bitbucket_repo_url' do
         expect(git.bitbucket_repo_url).to be_nil
@@ -55,18 +61,18 @@ describe GithubBitbucketDeployer::Git do
         expect(git.id_rsa).to be_nil
       end
 
-      it 'has no logger' do
-        expect(git.logger).to be_nil
-      end
-
       it 'has no repo_dir' do
         expect(git.repo_dir).to be_nil
+      end
+
+      it 'has a default logger' do
+        expect(git.logger).to be_an_instance_of(Logger)
       end
     end
 
     context 'with options' do
       it 'sets the bitbucket_repo_url' do
-        expect(git.bitbucket_repo_url).to eq(options[:bitbucket_repo_url])
+        expect(git.bitbucket_repo_url).to eq(bitbucket_repo_url)
       end
 
       it 'sets the git_repo_name' do
@@ -74,11 +80,11 @@ describe GithubBitbucketDeployer::Git do
       end
 
       it 'sets the id_rsa' do
-        expect(git.id_rsa).to eq(options[:id_rsa])
+        expect(git.id_rsa).to eq(id_rsa)
       end
 
       it 'sets the logger' do
-        expect(git.logger).to eq(options[:logger])
+        expect(git.logger).to eq(logger)
       end
 
       it 'sets the repo_dir' do
@@ -89,8 +95,6 @@ describe GithubBitbucketDeployer::Git do
 
   describe '#push_app_to_bitbucket', :fakefs do
     subject { push_app }
-
-    before { allow(Git).to receive(:open).and_return(git_repo) }
 
     context 'with default arguments' do
       let(:push_app) { git.push_app_to_bitbucket }
@@ -158,8 +162,9 @@ describe GithubBitbucketDeployer::Git do
         let(:git_remote) { instance_double(Git::Remote, url: nil) }
 
         it 'clones the bitbucket repo into the local folder' do
-          expect(git).to receive(:run)
-            .with(/git clone #{bitbucket_repo_url} #{working_dir}/)
+          expect(::Git).to receive(:clone)
+            .with(bitbucket_repo_url, working_dir, log: logger)
+            .and_return(git_repo)
           push_app
         end
 
@@ -181,7 +186,7 @@ describe GithubBitbucketDeployer::Git do
 
       let(:remote) { 'my_git_server' }
       let(:branch) { 'my_topic_branch' }
-      let(:block) { lambda { |arg| @block_arg = arg } }
+      let(:block) { ->(arg) { @block_arg = arg } }
 
       context 'when local git repo exists' do
         before { create_local_repo(git_repo_name, working_dir) }
@@ -245,7 +250,9 @@ describe GithubBitbucketDeployer::Git do
 
       context 'when local git repo does not exist' do
         it 'clones the repo' do
-          expect(git).to receive(:run).with(/git clone #{bitbucket_repo_url} #{working_dir}/)
+          expect(::Git).to receive(:clone)
+            .with(bitbucket_repo_url, working_dir, log: logger)
+            .and_return(git_repo)
           push_app
         end
 
@@ -276,7 +283,7 @@ describe GithubBitbucketDeployer::Git do
       context 'with a git repo' do
         before { create_local_repo(git_repo_name, working_dir) }
 
-        it { is_expected.to be_kind_of(Git::Base) }
+        it { is_expected.to eq(git_repo) }
 
         it 'points to the local working dir' do
           expect(repo.dir.path).to eq(working_dir)
@@ -291,20 +298,14 @@ describe GithubBitbucketDeployer::Git do
       context 'without a git repo' do
         before do
           FileUtils.rm_rf(working_dir)
-          allow(git).to receive(:run).with(/git clone/) do
-            create_local_repo(git_repo_name, working_dir)
-          end
         end
 
-        it { is_expected.to be_kind_of(Git::Base) }
-
-        it 'points to the local working dir' do
-          expect(repo.dir.path).to eq(working_dir)
-        end
+        it { is_expected.to eq(git_repo) }
 
         it 'clones the repo locally' do
-          expect(git).to receive(:run)
-            .with(/git clone #{bitbucket_repo_url} #{working_dir}/)
+          expect(::Git).to receive(:clone)
+            .with(bitbucket_repo_url, working_dir, log: logger)
+            .and_return(git_repo)
           repo
         end
       end
@@ -313,9 +314,6 @@ describe GithubBitbucketDeployer::Git do
     context 'when repo_dir does not exist' do
       before do
         FileUtils.rm_rf(repo_dir)
-        allow(git).to receive(:run).with(/git clone/) do
-          create_local_repo(git_repo_name, working_dir)
-        end
       end
 
       it 'creates the local repo dir' do
@@ -323,15 +321,12 @@ describe GithubBitbucketDeployer::Git do
         expect(File).to exist(repo_dir)
       end
 
-      it { is_expected.to be_kind_of(Git::Base) }
-
-      it 'points to the local working dir' do
-        expect(repo.dir.path).to eq(working_dir)
-      end
+      it { is_expected.to eq(git_repo) }
 
       it 'clones the repo locally' do
-        expect(git).to receive(:run)
-          .with(/git clone #{bitbucket_repo_url} #{working_dir}/)
+        expect(::Git).to receive(:clone)
+          .with(bitbucket_repo_url, working_dir, log: logger)
+          .and_return(git_repo)
         repo
       end
     end
@@ -415,20 +410,12 @@ describe GithubBitbucketDeployer::Git do
   describe '#clone', :fakefs do
     subject(:clone) { git.clone }
 
-    it 'unsets the git work tree' do
-      expect(git).to receive(:run).with(/^unset GIT_WORK_TREE/)
-      clone
-    end
-
-    it 'interacts with bitbucket via the git ssh wrapper' do
-      expect(git).to receive(:run)
-        .with(%r{env GIT_SSH='/tmp/git-ssh-wrapper\S+'})
-      clone
-    end
+    it { is_expected.to be(git_repo) }
 
     it 'clones the bitbucket repo into the local folder' do
-      expect(git).to receive(:run)
-        .with(/git clone #{bitbucket_repo_url} #{working_dir}/)
+      expect(Git).to receive(:clone)
+        .with(bitbucket_repo_url, working_dir, log: logger)
+        .and_return(git_repo)
       clone
     end
   end
@@ -450,8 +437,74 @@ describe GithubBitbucketDeployer::Git do
       before { FileUtils.rm_rf(working_dir) }
 
       it 'clones' do
-        expect(git).to receive(:run).with(/git clone/)
+        expect(::Git).to receive(:clone).and_return(git_repo)
         clone_or_pull
+      end
+    end
+  end
+
+  describe '#with_ssh', :fakefs do
+    subject(:with_ssh) { git.with_ssh(&block) }
+
+    let(:temp_files) do
+      Dir.glob("#{Dir.tmpdir}/git-ssh-wrapper*").sort_by { |f| File.mtime(f) }
+    end
+    let(:key_file) { temp_files.first }
+    let(:wrapper_file) { temp_files.last }
+
+    context 'when block exits successfully' do
+      let(:block) { -> { block_return_value } }
+      let(:block_return_value) { 'whatever' }
+
+      it { is_expected.to eq(block_return_value) }
+
+      it 'writes the private key to a file' do
+        git.with_ssh do
+          expect(key_file).to be
+          expect(File.read(key_file)).to eq(id_rsa)
+        end
+      end
+
+      it 'writes the git ssh wrapper to use the private key' do
+        git.with_ssh do
+          expect(wrapper_file).to be
+          expect(File.read(wrapper_file)).to match(/IdentityFile=#{key_file}/)
+        end
+      end
+
+      it 'sets the GIT_SSH env var before yielding' do
+        git.with_ssh do
+          expect(ENV['GIT_SSH']).to eq(wrapper_file)
+        end
+      end
+
+      it 'resets the GIT_SSH env var after exiting' do
+        expect { with_ssh }.to_not change { ENV['GIT_SSH'] }
+      end
+
+      it 'unlinks the temp ssh files' do
+        with_ssh
+        expect(temp_files).to be_empty
+      end
+    end
+
+    context 'when block raises an error' do
+      let(:block) { -> { fail block_error } }
+      let(:block_error) { 'oopsy' }
+
+      let(:with_ssh_safe) { with_ssh rescue block_error }
+
+      it 'raises the error' do
+        expect { with_ssh }.to raise_error(block_error)
+      end
+
+      it 'resets the GIT_SSH env var' do
+        expect { with_ssh_safe }.to_not change { ENV['GIT_SSH'] }
+      end
+
+      it 'unlinks the temp ssh files' do
+        with_ssh_safe
+        expect(temp_files).to be_empty
       end
     end
   end
@@ -477,12 +530,11 @@ describe GithubBitbucketDeployer::Git do
   describe '#open', :fakefs do
     subject(:open) { git.open }
 
-    before { create_local_repo(git_repo_name, working_dir) }
+    it { is_expected.to eq(git_repo) }
 
-    it { is_expected.to be_kind_of Git::Base }
-
-    it 'points to the local working dir' do
-      expect(open.dir.path).to eq(working_dir)
+    it 'opens the local repo with logging' do
+      expect(::Git).to receive(:open).with(working_dir, log: logger).and_return(git_repo)
+      open
     end
   end
 end

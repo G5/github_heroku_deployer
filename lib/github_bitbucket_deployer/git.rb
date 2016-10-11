@@ -1,9 +1,10 @@
 require "git"
 require "git-ssh-wrapper"
+require "github_bitbucket_deployer/clone_logger_fix"
 
 module GithubBitbucketDeployer
   class Git
-    attr_reader :bitbucket_repo_url, :git_repo_name, :id_rsa, :logger, :repo_dir
+    attr_reader :bitbucket_repo_url, :git_repo_name, :id_rsa, :repo_dir
 
     def initialize(options)
       @bitbucket_repo_url = options[:bitbucket_repo_url]
@@ -11,6 +12,10 @@ module GithubBitbucketDeployer
       @id_rsa = options[:id_rsa]
       @logger = options[:logger]
       @repo_dir = options[:repo_dir]
+    end
+
+    def logger
+      @logger ||= Logger.new(STDOUT)
     end
 
     def push_app_to_bitbucket(remote="bitbucket", branch="master", &block)
@@ -43,12 +48,11 @@ module GithubBitbucketDeployer
     end
 
     def clone
-      @logger.info "git clone"
-      wrapper = ssh_wrapper
-      @logger.info "cloning #{@bitbucket_repo_url} to #{folder}"
-      run "unset GIT_WORK_TREE; env #{wrapper.git_ssh} git clone #{@bitbucket_repo_url} #{folder}"
-    ensure
-      wrapper.unlink
+      logger.info "git clone"
+      with_ssh do
+        logger.info "cloning #{bitbucket_repo_url} to #{folder}"
+        ::Git.clone(bitbucket_repo_url, folder, log: logger)
+      end
     end
 
     def pull
@@ -63,11 +67,18 @@ module GithubBitbucketDeployer
 
     def open
       @logger.info "git open"
-      ::Git.open(folder)
+      ::Git.open(folder, log: logger)
     end
 
     def ssh_wrapper
       GitSSHWrapper.new(private_key_path: id_rsa_path)
+    end
+
+    def with_ssh
+      GitSSHWrapper.with_wrapper(private_key: id_rsa) do |wrapper|
+        wrapper.set_env
+        yield
+      end
     end
 
     private
@@ -102,4 +113,3 @@ module GithubBitbucketDeployer
     end
   end
 end
-
