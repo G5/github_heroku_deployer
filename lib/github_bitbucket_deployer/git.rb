@@ -56,17 +56,19 @@ module GithubBitbucketDeployer
     end
 
     def pull
-      @logger.info "git pull"
-      wrapper = ssh_wrapper
-      dir = Dir.pwd # need to cd back to here
-      @logger.info "pulling from #{folder}"
-      run "cd #{folder}; env #{wrapper.git_ssh} git pull; cd #{dir}"
-    ensure
-      wrapper.unlink
+      logger.info "git pull"
+      local_repo = open
+
+      with_ssh do
+        logger.info "pulling from #{folder}"
+        local_repo.pull
+      end
+
+      local_repo
     end
 
     def open
-      @logger.info "git open"
+      logger.info "git open"
       ::Git.open(folder, log: logger)
     end
 

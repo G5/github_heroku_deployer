@@ -28,7 +28,8 @@ describe GithubBitbucketDeployer::Git do
   let(:git_repo) do
     instance_double(::Git::Base, remote: git_remote,
                                  dir: git_working_dir,
-                                 add_remote: true)
+                                 add_remote: true,
+                                 pull: true)
   end
   let(:git_remote) do
     instance_double(::Git::Remote, url: bitbucket_repo_url)
@@ -105,7 +106,7 @@ describe GithubBitbucketDeployer::Git do
         let(:unrelated_remote) { 'heroku' }
 
         it 'pulls from the remote repo' do
-          expect(git).to receive(:run).with(/git pull/)
+          expect(git_repo).to receive(:pull).and_return(true)
           push_app
         end
 
@@ -192,7 +193,7 @@ describe GithubBitbucketDeployer::Git do
         before { create_local_repo(git_repo_name, working_dir) }
 
         it 'pulls from the remote repo' do
-          expect(git).to receive(:run).with(/git pull/)
+          expect(git_repo).to receive(:pull).and_return(true)
           push_app
         end
 
@@ -290,7 +291,7 @@ describe GithubBitbucketDeployer::Git do
         end
 
         it 'pulls into the existing repo' do
-          expect(git).to receive(:run).with(/git pull/)
+          expect(git_repo).to receive(:pull).and_return(true)
           repo
         end
       end
@@ -385,25 +386,15 @@ describe GithubBitbucketDeployer::Git do
   describe '#pull', :fakefs do
     subject(:pull) { git.pull }
 
-    it 'changes into the directory' do
-      pull
-      expect(git).to have_received(:run).with(/^cd #{working_dir};/)
-    end
+    it { is_expected.to be(git_repo) }
 
-    it 'interacts with bitbucket using the git ssh wrapper' do
-      expect(git).to receive(:run)
-        .with(%r{env GIT_SSH='/tmp/git-ssh-wrapper\S+'})
+    it 'pulls from the remote server' do
+      expect(git_repo).to receive(:pull)
       pull
     end
 
-    it 'pulls from bitbucket' do
-      expect(git).to receive(:run).with(/git pull/)
-      pull
-    end
-
-    it 'changes back to original dir' do
-      expect(git).to receive(:run).with(/cd #{Dir.pwd}$/)
-      pull
+    it 'does not change the current dir' do
+      expect { pull }.to_not change { Dir.pwd }
     end
   end
 
@@ -428,7 +419,7 @@ describe GithubBitbucketDeployer::Git do
       before { create_local_repo(git_repo_name, working_dir) }
 
       it 'pulls' do
-        expect(git).to receive(:run).with(/git pull/)
+        expect(git_repo).to receive(:pull).and_return(true)
         clone_or_pull
       end
     end
