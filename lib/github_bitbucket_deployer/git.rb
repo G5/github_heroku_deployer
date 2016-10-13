@@ -19,15 +19,14 @@ module GithubBitbucketDeployer
     end
 
     def push_app_to_bitbucket(remote="bitbucket", branch="master", &block)
-      @logger.info "push_app_to_bitbucket"
-      wrapper = ssh_wrapper
-      run "cd #{repo.dir}; git remote rm #{remote}" if repo.remote(remote).url
-      repo.add_remote(remote, @bitbucket_repo_url)
-      yield(repo) if block_given?
-      @logger.info "deploying #{repo.dir} to #{repo.remote(remote).url} from branch #{branch}"
-      run "cd #{repo.dir}; env #{wrapper.git_ssh} git push -f #{remote} #{branch}"
-    ensure
-      wrapper.unlink
+      logger.info('push_app_to_bitbucket')
+      with_ssh do
+        repo.remote(remote).remove if repo.remote(remote).url
+        repo.add_remote(remote, bitbucket_repo_url)
+        yield(repo) if block_given?
+        logger.info("deploying #{repo.dir} to #{repo.remote(remote).url} from branch #{branch}")
+        repo.push(remote, branch, force: true)
+      end
     end
 
     def repo
@@ -39,7 +38,7 @@ module GithubBitbucketDeployer
     end
 
     def clone_or_pull
-      @logger.info "clone_or_pull"
+      logger.info "clone_or_pull"
       exists_locally? ? pull : clone
     end
 
@@ -85,17 +84,17 @@ module GithubBitbucketDeployer
 
     private
     def setup_folder
-      @logger.info "setup_folder"
+      logger.info "setup_folder"
       folder = File.join(@repo_dir, Zlib.crc32(@git_repo_name).to_s)
       FileUtils.mkdir_p(folder).first
     end
 
     def run(command)
-      @logger.info "git run command: #{command}"
+      logger.info "git run command: #{command}"
       result = system("#{command} 2>&1")
       sleep 20
       if result
-        @logger.info $?.to_s
+        logger.info $?.to_s
       else
         raise GithubBitbucketDeployer::CommandException, $?.to_s
       end
@@ -109,7 +108,7 @@ module GithubBitbucketDeployer
     end
 
     def setup_repo
-      @logger.info "setup_repo"
+      logger.info "setup_repo"
       clone_or_pull
       open
     end
