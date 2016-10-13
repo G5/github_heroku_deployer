@@ -1,6 +1,6 @@
-require "git"
-require "git-ssh-wrapper"
-require "github_bitbucket_deployer/clone_logger_fix"
+require 'git'
+require 'git-ssh-wrapper'
+require 'github_bitbucket_deployer/clone_logger_fix'
 
 module GithubBitbucketDeployer
   class Git
@@ -18,7 +18,7 @@ module GithubBitbucketDeployer
       @logger ||= Logger.new(STDOUT)
     end
 
-    def push_app_to_bitbucket(remote="bitbucket", branch="master", &block)
+    def push_app_to_bitbucket(remote = 'bitbucket', branch = 'master')
       logger.info('push_app_to_bitbucket')
       with_ssh do
         repo.remote(remote).remove if repo.remote(remote).url
@@ -38,28 +38,29 @@ module GithubBitbucketDeployer
     end
 
     def clone_or_pull
-      logger.info "clone_or_pull"
+      logger.info('clone_or_pull')
       exists_locally? ? pull : clone
     end
 
     def exists_locally?
-      File.exists?(File.join(folder, ".git", "config"))
+      git_config = File.join(folder, '.git', 'config')
+      File.exist?(git_config)
     end
 
     def clone
-      logger.info "git clone"
+      logger.info('git clone')
       with_ssh do
-        logger.info "cloning #{bitbucket_repo_url} to #{folder}"
+        logger.info("cloning #{bitbucket_repo_url} to #{folder}")
         ::Git.clone(bitbucket_repo_url, folder, log: logger)
       end
     end
 
     def pull
-      logger.info "git pull"
+      logger.info('git pull')
       local_repo = open
 
       with_ssh do
-        logger.info "pulling from #{folder}"
+        logger.info("pulling from #{folder}")
         local_repo.pull
       end
 
@@ -67,48 +68,26 @@ module GithubBitbucketDeployer
     end
 
     def open
-      logger.info "git open"
+      logger.info('git open')
       ::Git.open(folder, log: logger)
-    end
-
-    def ssh_wrapper
-      GitSSHWrapper.new(private_key_path: id_rsa_path)
     end
 
     def with_ssh
       GitSSHWrapper.with_wrapper(private_key: id_rsa) do |wrapper|
         wrapper.set_env
-        yield
+        yield if block_given?
       end
     end
 
     private
     def setup_folder
-      logger.info "setup_folder"
+      logger.info('setup_folder')
       folder = File.join(@repo_dir, Zlib.crc32(@git_repo_name).to_s)
       FileUtils.mkdir_p(folder).first
     end
 
-    def run(command)
-      logger.info "git run command: #{command}"
-      result = system("#{command} 2>&1")
-      sleep 20
-      if result
-        logger.info $?.to_s
-      else
-        raise GithubBitbucketDeployer::CommandException, $?.to_s
-      end
-    end
-
-    def id_rsa_path
-      file = Tempfile.new("id_rsa")
-      file.write(@id_rsa)
-      file.rewind
-      file.path
-    end
-
     def setup_repo
-      logger.info "setup_repo"
+      logger.info('setup_repo')
       clone_or_pull
       open
     end

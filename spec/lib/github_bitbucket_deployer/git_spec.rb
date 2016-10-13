@@ -21,10 +21,6 @@ describe GithubBitbucketDeployer::Git do
   let(:repo_dir) { '/my_home/projects' }
   let(:working_dir) { "#{repo_dir}/#{local_repo_folder}" }
 
-  before do
-    allow(git).to receive(:run).with(a_kind_of(String)).and_return(true)
-  end
-
   let(:git_repo) do
     instance_double(::Git::Base, remote: empty_remote,
                                  dir: git_working_dir,
@@ -110,7 +106,7 @@ describe GithubBitbucketDeployer::Git do
       let(:push_app) { git.push_app_to_bitbucket }
 
       context 'when local repo already exists' do
-        before { create_local_repo(git_repo_name, working_dir) }
+        before { create_local_repo(working_dir) }
 
         let(:other_remote) do
           instance_double(::Git::Remote, url: 'git@heroku.com:my_app.git')
@@ -215,7 +211,7 @@ describe GithubBitbucketDeployer::Git do
       let(:block) { ->(arg) { @block_arg = arg } }
 
       context 'when local git repo exists' do
-        before { create_local_repo(git_repo_name, working_dir) }
+        before { create_local_repo(working_dir) }
 
         let(:custom_remote) do
           instance_double(Git::Remote, url: bitbucket_repo_url,
@@ -304,7 +300,7 @@ describe GithubBitbucketDeployer::Git do
 
         it 'forces pushes the branch' do
           expect(git_repo).to receive(:push)
-              .with(remote_name, branch, force: true)
+            .with(remote_name, branch, force: true)
           push_app
         end
       end
@@ -318,7 +314,7 @@ describe GithubBitbucketDeployer::Git do
       before { FileUtils.mkdir_p(repo_dir) }
 
       context 'with a git repo' do
-        before { create_local_repo(git_repo_name, working_dir) }
+        before { create_local_repo(working_dir) }
 
         it { is_expected.to eq(git_repo) }
 
@@ -400,7 +396,7 @@ describe GithubBitbucketDeployer::Git do
       before { FileUtils.mkdir_p(working_dir) }
 
       context 'with a git repo' do
-        before { create_local_repo(git_repo_name, working_dir) }
+        before { create_local_repo(working_dir) }
 
         it { is_expected.to be true }
       end
@@ -419,7 +415,7 @@ describe GithubBitbucketDeployer::Git do
     end
   end
 
-  describe '#pull', :fakefs do
+  describe '#pull' do
     subject(:pull) { git.pull }
 
     it { is_expected.to be(git_repo) }
@@ -434,7 +430,7 @@ describe GithubBitbucketDeployer::Git do
     end
   end
 
-  describe '#clone', :fakefs do
+  describe '#clone' do
     subject(:clone) { git.clone }
 
     it { is_expected.to be(git_repo) }
@@ -452,7 +448,7 @@ describe GithubBitbucketDeployer::Git do
     subject(:clone_or_pull) { git.clone_or_pull }
 
     context 'when local repo already exists' do
-      before { create_local_repo(git_repo_name, working_dir) }
+      before { create_local_repo(working_dir) }
 
       it 'pulls' do
         expect(git_repo).to receive(:pull).and_return(true)
@@ -536,25 +532,7 @@ describe GithubBitbucketDeployer::Git do
     end
   end
 
-  describe '#ssh_wrapper', :fakefs do
-    subject(:ssh_wrapper) { git.ssh_wrapper }
-
-    it { is_expected.to be_kind_of(GitSSHWrapper) }
-
-    it 'writes the private key to a tempfile' do
-      ssh_wrapper
-      tmpfile = Dir.glob("#{Dir.tmpdir}/id_rsa*").first
-      expect(File.read(tmpfile)).to eq(id_rsa)
-    end
-
-    it 'initializes an ssh wrapper with the private key' do
-      expect(GitSSHWrapper).to receive(:new)
-        .with(private_key_path: %r{^#{Dir.tmpdir}/id_rsa})
-      ssh_wrapper
-    end
-  end
-
-  describe '#open', :fakefs do
+  describe '#open' do
     subject(:open) { git.open }
 
     it { is_expected.to eq(git_repo) }

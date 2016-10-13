@@ -1,9 +1,9 @@
 require 'spec_helper'
 
 describe GithubBitbucketDeployer::Configuration do
-  it { should respond_to :"[]" }
-  it { should respond_to :to_hash }
-  it { should respond_to :merge }
+  it { is_expected.to respond_to :"[]" }
+  it { is_expected.to respond_to :to_hash }
+  it { is_expected.to respond_to :merge }
 
   it "provides default values" do
     assert_config_default :id_rsa, ENV["ID_RSA"]
@@ -17,7 +17,7 @@ describe GithubBitbucketDeployer::Configuration do
     config = GithubBitbucketDeployer::Configuration.new
     hash = config.to_hash
     GithubBitbucketDeployer::Configuration::OPTIONS.each_pair do |key, value|
-      config[key].should eq(hash[key])
+      expect(config[key]).to eq(hash[key])
     end
   end
 
