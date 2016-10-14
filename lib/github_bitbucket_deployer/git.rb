@@ -20,12 +20,10 @@ module GithubBitbucketDeployer
 
     def push_app_to_bitbucket(remote = 'bitbucket', branch = 'master')
       logger.info('push_app_to_bitbucket')
+      update_remote(remote)
       with_ssh do
-        repo.remote(remote).remove if repo.remote(remote).url
-        repo.add_remote(remote, bitbucket_repo_url)
         yield(repo) if block_given?
-        logger.info("deploying #{repo.dir} to #{repo.remote(remote).url} from branch #{branch}")
-        repo.push(remote, branch, force: true)
+        push(remote, branch)
       end
     end
 
@@ -37,8 +35,8 @@ module GithubBitbucketDeployer
       @folder ||= setup_folder
     end
 
-    def clone_or_pull
-      logger.info('clone_or_pull')
+    def update_working_copy
+      logger.info('update_working_copy')
       exists_locally? ? pull : clone
     end
 
@@ -80,6 +78,7 @@ module GithubBitbucketDeployer
     end
 
     private
+
     def setup_folder
       logger.info('setup_folder')
       folder = File.join(@repo_dir, Zlib.crc32(@git_repo_name).to_s)
@@ -88,8 +87,20 @@ module GithubBitbucketDeployer
 
     def setup_repo
       logger.info('setup_repo')
-      clone_or_pull
+      update_working_copy
       open
+    end
+
+    def update_remote(remote)
+      logger.info('update_remote')
+      repo.remote(remote).remove if repo.remote(remote).url
+      repo.add_remote(remote, bitbucket_repo_url)
+    end
+
+    def push(remote, branch)
+      logger.info("deploying #{repo.dir} to #{repo.remote(remote).url}" \
+                  "from branch #{branch}")
+      repo.push(remote, branch, force: true)
     end
   end
 end

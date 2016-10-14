@@ -137,7 +137,7 @@ describe GithubBitbucketDeployer::Git do
             push_app
           end
 
-          it 'creates the bitbucket remote' do
+          it 'creates the bitbucket remote anew' do
             expect(git_repo).to receive(:add_remote)
               .with('bitbucket', bitbucket_repo_url)
             push_app
@@ -204,11 +204,10 @@ describe GithubBitbucketDeployer::Git do
     end
 
     context 'with custom arguments' do
-      let(:push_app) { git.push_app_to_bitbucket(remote_name, branch, &block) }
+      let(:push_app) { git.push_app_to_bitbucket(remote_name, branch) }
 
       let(:remote_name) { 'my_git_server' }
       let(:branch) { 'my_topic_branch' }
-      let(:block) { ->(arg) { @block_arg = arg } }
 
       context 'when local git repo exists' do
         before { create_local_repo(working_dir) }
@@ -241,7 +240,9 @@ describe GithubBitbucketDeployer::Git do
           end
 
           it 'yields to the block' do
-            expect { push_app }.to change { @block_arg }.from(nil).to(git_repo)
+            expect do |block|
+              git.push_app_to_bitbucket(remote_name, branch, &block)
+            end.to yield_with_args(git_repo)
           end
 
           it 'forces pushes the branch' do
@@ -266,7 +267,9 @@ describe GithubBitbucketDeployer::Git do
           end
 
           it 'yields to the block' do
-            expect { push_app }.to change { @block_arg }.from(nil).to(git_repo)
+            expect do |block|
+              git.push_app_to_bitbucket(remote_name, branch, &block)
+            end.to yield_with_args(git_repo)
           end
 
           it 'force pushes the branch' do
@@ -294,8 +297,9 @@ describe GithubBitbucketDeployer::Git do
         end
 
         it 'yields the repo to the block' do
-          push_app
-          expect(@block_arg).to eq(git_repo)
+          expect do |block|
+            git.push_app_to_bitbucket(remote_name, branch, &block)
+          end.to yield_with_args(git_repo)
         end
 
         it 'forces pushes the branch' do
@@ -443,16 +447,15 @@ describe GithubBitbucketDeployer::Git do
     end
   end
 
-  # TODO: rename this method something more generic (e.g. update_working_copy)
-  describe '#clone_or_pull', :fakefs do
-    subject(:clone_or_pull) { git.clone_or_pull }
+  describe '#update_working_copy', :fakefs do
+    subject(:update_working_copy) { git.update_working_copy }
 
     context 'when local repo already exists' do
       before { create_local_repo(working_dir) }
 
       it 'pulls' do
         expect(git_repo).to receive(:pull).and_return(true)
-        clone_or_pull
+        update_working_copy
       end
     end
 
@@ -461,7 +464,7 @@ describe GithubBitbucketDeployer::Git do
 
       it 'clones' do
         expect(::Git).to receive(:clone).and_return(git_repo)
-        clone_or_pull
+        update_working_copy
       end
     end
   end
