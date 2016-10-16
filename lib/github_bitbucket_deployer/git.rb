@@ -1,5 +1,6 @@
 require 'git'
 require 'git-ssh-wrapper'
+require 'retriable'
 require 'github_bitbucket_deployer/clone_logger_fix'
 
 module GithubBitbucketDeployer
@@ -49,7 +50,7 @@ module GithubBitbucketDeployer
       logger.info('git clone')
       with_ssh do
         logger.info("cloning #{bitbucket_repo_url} to #{folder}")
-        ::Git.clone(bitbucket_repo_url, folder, log: logger)
+        run { ::Git.clone(bitbucket_repo_url, folder, log: logger) }
       end
     end
 
@@ -59,7 +60,7 @@ module GithubBitbucketDeployer
 
       with_ssh do
         logger.info("pulling from #{folder}")
-        local_repo.pull
+        run { local_repo.pull }
       end
 
       local_repo
@@ -70,11 +71,24 @@ module GithubBitbucketDeployer
       ::Git.open(folder, log: logger)
     end
 
+    def push(remote, branch)
+      logger.info("deploying #{repo.dir} to #{repo.remote(remote).url}" \
+                  "from branch #{branch}")
+      run { repo.push(remote, branch, force: true) }
+    end
+
     def with_ssh
       GitSSHWrapper.with_wrapper(private_key: id_rsa) do |wrapper|
         wrapper.set_env
         yield if block_given?
       end
+    end
+
+    def run
+      Retriable.retriable(on: ::Git::GitExecuteError, tries: 3) { yield }
+    rescue ::Git::GitExecuteError => error
+      logger.error(error)
+      raise GithubBitbucketDeployer::CommandException, error
     end
 
     private
@@ -95,12 +109,6 @@ module GithubBitbucketDeployer
       logger.info('update_remote')
       repo.remote(remote).remove if repo.remote(remote).url
       repo.add_remote(remote, bitbucket_repo_url)
-    end
-
-    def push(remote, branch)
-      logger.info("deploying #{repo.dir} to #{repo.remote(remote).url}" \
-                  "from branch #{branch}")
-      repo.push(remote, branch, force: true)
     end
   end
 end

@@ -17,7 +17,7 @@ describe GithubBitbucketDeployer::Git do
   let(:git_repo_name) { 'some_repo' }
   let(:local_repo_folder) { Zlib.crc32(git_repo_name) }
   let(:id_rsa) { 'this is the value of my key' }
-  let(:logger) { double('logger', info: true) }
+  let(:logger) { double('logger', info: true, error: true) }
   let(:repo_dir) { '/my_home/projects' }
   let(:working_dir) { "#{repo_dir}/#{local_repo_folder}" }
 
@@ -544,6 +544,62 @@ describe GithubBitbucketDeployer::Git do
       expect(::Git).to receive(:open)
         .with(working_dir, log: logger).and_return(git_repo)
       open
+    end
+  end
+
+  describe '#run' do
+    subject(:run) { git.run(&block) }
+
+    let(:safe_run) { run rescue false }
+
+    context 'when block is successful' do
+      let(:block) { -> { 'block return value' } }
+
+      it { is_expected.to eq('block return value') }
+
+      it 'executes the block once' do
+        expect { |block| git.run(&block) }.to yield_control.once
+      end
+    end
+
+    context 'when block fails' do
+      let(:block) do
+        @yield_count = 0
+        lambda do
+          @yield_count += 1
+          raise error
+        end
+      end
+
+      context 'with a Git::GitExecuteError' do
+        let(:error) { Git::GitExecuteError.new('some git error') }
+
+        it 'retries twice after the original failure' do
+          safe_run
+          expect(@yield_count).to eq(3)
+        end
+
+        it 'logs the error' do
+          expect(logger).to receive(:error)
+          safe_run
+        end
+
+        it 'raises a GithubBitbucketDeployer::CommandException' do
+          expect { run }.to raise_error(GithubBitbucketDeployer::CommandException)
+        end
+      end
+
+      context 'with another type of error' do
+        let(:error) { ArgumentError.new('some non-git error') }
+
+        it 'does not retry' do
+          expect { |block| git.run(&block) }.to yield_control.once
+        end
+
+        it 'raises the original exception' do
+          expect { run }.to raise_error(error)
+        end
+      end
     end
   end
 end
