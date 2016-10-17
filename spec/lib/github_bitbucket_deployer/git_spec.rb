@@ -419,7 +419,7 @@ describe GithubBitbucketDeployer::Git do
     end
   end
 
-  describe '#pull' do
+  describe '#pull', :fakefs do
     subject(:pull) { git.pull }
 
     it { is_expected.to be(git_repo) }
@@ -434,7 +434,7 @@ describe GithubBitbucketDeployer::Git do
     end
   end
 
-  describe '#clone' do
+  describe '#clone', :fakefs do
     subject(:clone) { git.clone }
 
     it { is_expected.to be(git_repo) }
@@ -535,7 +535,7 @@ describe GithubBitbucketDeployer::Git do
     end
   end
 
-  describe '#open' do
+  describe '#open', :fakefs do
     subject(:open) { git.open }
 
     it { is_expected.to eq(git_repo) }
