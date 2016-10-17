@@ -432,6 +432,14 @@ describe GithubBitbucketDeployer::Git do
     it 'does not change the current dir' do
       expect { pull }.to_not change { Dir.pwd }
     end
+
+    it_behaves_like 'a git error handler' do
+      before { allow(git_repo).to receive(:pull).and_raise(error) }
+
+      let(:retry_git_command) do
+        expect(git_repo).to have_received(:pull).exactly(retry_limit).times
+      end
+    end
   end
 
   describe '#clone', :fakefs do
@@ -440,10 +448,18 @@ describe GithubBitbucketDeployer::Git do
     it { is_expected.to be(git_repo) }
 
     it 'clones the bitbucket repo into the local folder' do
-      expect(Git).to receive(:clone)
+      expect(::Git).to receive(:clone)
         .with(bitbucket_repo_url, working_dir, log: logger)
         .and_return(git_repo)
       clone
+    end
+
+    it_behaves_like 'a git error handler' do
+      before { allow(::Git).to receive(:clone).and_raise(error) }
+
+      let(:retry_git_command) do
+        expect(::Git).to have_received(:clone).exactly(retry_limit).times
+      end
     end
   end
 
@@ -547,58 +563,22 @@ describe GithubBitbucketDeployer::Git do
     end
   end
 
-  describe '#run' do
-    subject(:run) { git.run(&block) }
+  describe '#push' do
+    subject(:push) { git.push(remote_name, branch) }
 
-    let(:safe_run) { run rescue false }
+    let(:remote_name) { 'bitbucket' }
+    let(:branch) { 'master' }
 
-    context 'when block is successful' do
-      let(:block) { -> { 'block return value' } }
-
-      it { is_expected.to eq('block return value') }
-
-      it 'executes the block once' do
-        expect { |block| git.run(&block) }.to yield_control.once
-      end
+    it 'force pushes the branch to the remote' do
+      expect(git_repo).to receive(:push).with(remote_name, branch, force: true)
+      push
     end
 
-    context 'when block fails' do
-      let(:block) do
-        @yield_count = 0
-        lambda do
-          @yield_count += 1
-          raise error
-        end
-      end
+    it_behaves_like 'a git error handler' do
+      before { allow(git_repo).to receive(:push).and_raise(error) }
 
-      context 'with a Git::GitExecuteError' do
-        let(:error) { Git::GitExecuteError.new('some git error') }
-
-        it 'retries twice after the original failure' do
-          safe_run
-          expect(@yield_count).to eq(3)
-        end
-
-        it 'logs the error' do
-          expect(logger).to receive(:error)
-          safe_run
-        end
-
-        it 'raises a GithubBitbucketDeployer::CommandException' do
-          expect { run }.to raise_error(GithubBitbucketDeployer::CommandException)
-        end
-      end
-
-      context 'with another type of error' do
-        let(:error) { ArgumentError.new('some non-git error') }
-
-        it 'does not retry' do
-          expect { |block| git.run(&block) }.to yield_control.once
-        end
-
-        it 'raises the original exception' do
-          expect { run }.to raise_error(error)
-        end
+      let(:retry_git_command) do
+        expect(git_repo).to have_received(:push).exactly(retry_limit).times
       end
     end
   end

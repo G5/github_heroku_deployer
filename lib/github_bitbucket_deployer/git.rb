@@ -84,13 +84,6 @@ module GithubBitbucketDeployer
       end
     end
 
-    def run
-      Retriable.retriable(on: ::Git::GitExecuteError, tries: 3) { yield }
-    rescue ::Git::GitExecuteError => error
-      logger.error(error)
-      raise GithubBitbucketDeployer::CommandException, error
-    end
-
     private
 
     def setup_folder
@@ -109,6 +102,13 @@ module GithubBitbucketDeployer
       logger.info('update_remote')
       repo.remote(remote).remove if repo.remote(remote).url
       repo.add_remote(remote, bitbucket_repo_url)
+    end
+
+    def run
+      Retriable.retriable(on: ::Git::GitExecuteError, tries: 3) { yield }
+    rescue ::Git::GitExecuteError => error
+      logger.error(error)
+      raise GithubBitbucketDeployer::CommandException, error
     end
   end
 end
