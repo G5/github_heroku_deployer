@@ -393,32 +393,6 @@ describe GithubBitbucketDeployer::Git do
     end
   end
 
-  describe '#exists_locally?', :fakefs do
-    subject(:exists_locally) { git.exists_locally? }
-
-    context 'when local folder exists' do
-      before { FileUtils.mkdir_p(working_dir) }
-
-      context 'with a git repo' do
-        before { create_local_repo(working_dir) }
-
-        it { is_expected.to be true }
-      end
-
-      context 'without a git repo' do
-        before { FileUtils.rm_rf("#{working_dir}/.git") }
-
-        it { is_expected.to be false }
-      end
-    end
-
-    context 'when local folder does not exist' do
-      before { FileUtils.rm_rf(repo_dir) }
-
-      it { is_expected.to be false }
-    end
-  end
-
   describe '#pull', :fakefs do
     subject(:pull) { git.pull }
 
@@ -438,6 +412,12 @@ describe GithubBitbucketDeployer::Git do
 
       let(:retry_git_command) do
         expect(git_repo).to have_received(:pull).exactly(retry_limit).times
+      end
+    end
+
+    it_behaves_like 'a git ssh wrapper' do
+      def run_git_command
+        expect(git_repo).to receive(:pull) { yield }
       end
     end
   end
@@ -461,92 +441,10 @@ describe GithubBitbucketDeployer::Git do
         expect(::Git).to have_received(:clone).exactly(retry_limit).times
       end
     end
-  end
 
-  describe '#update_working_copy', :fakefs do
-    subject(:update_working_copy) { git.update_working_copy }
-
-    context 'when local repo already exists' do
-      before { create_local_repo(working_dir) }
-
-      it 'pulls' do
-        expect(git_repo).to receive(:pull).and_return(true)
-        update_working_copy
-      end
-    end
-
-    context 'without existing local repo' do
-      before { FileUtils.rm_rf(working_dir) }
-
-      it 'clones' do
-        expect(::Git).to receive(:clone).and_return(git_repo)
-        update_working_copy
-      end
-    end
-  end
-
-  describe '#with_ssh', :fakefs do
-    subject(:with_ssh) { git.with_ssh(&block) }
-
-    let(:temp_files) do
-      Dir.glob("#{Dir.tmpdir}/git-ssh-wrapper*").sort_by { |f| File.mtime(f) }
-    end
-    let(:key_file) { temp_files.first }
-    let(:wrapper_file) { temp_files.last }
-
-    context 'when block exits successfully' do
-      let(:block) { -> { block_return_value } }
-      let(:block_return_value) { 'whatever' }
-
-      it { is_expected.to eq(block_return_value) }
-
-      it 'writes the private key to a file' do
-        git.with_ssh do
-          expect(key_file).to be
-          expect(File.read(key_file)).to eq(id_rsa)
-        end
-      end
-
-      it 'writes the git ssh wrapper to use the private key' do
-        git.with_ssh do
-          expect(wrapper_file).to be
-          expect(File.read(wrapper_file)).to match(/IdentityFile=#{key_file}/)
-        end
-      end
-
-      it 'sets the GIT_SSH env var before yielding' do
-        git.with_ssh do
-          expect(ENV['GIT_SSH']).to eq(wrapper_file)
-        end
-      end
-
-      it 'resets the GIT_SSH env var after exiting' do
-        expect { with_ssh }.to_not change { ENV['GIT_SSH'] }
-      end
-
-      it 'unlinks the temp ssh files' do
-        with_ssh
-        expect(temp_files).to be_empty
-      end
-    end
-
-    context 'when block raises an error' do
-      let(:block) { -> { raise block_error } }
-      let(:block_error) { 'oopsy' }
-
-      let(:with_ssh_safe) { with_ssh rescue block_error }
-
-      it 'raises the error' do
-        expect { with_ssh }.to raise_error(block_error)
-      end
-
-      it 'resets the GIT_SSH env var' do
-        expect { with_ssh_safe }.to_not change { ENV['GIT_SSH'] }
-      end
-
-      it 'unlinks the temp ssh files' do
-        with_ssh_safe
-        expect(temp_files).to be_empty
+    it_behaves_like 'a git ssh wrapper' do
+      def run_git_command
+        expect(::Git).to receive(:clone) { yield }
       end
     end
   end
@@ -579,6 +477,111 @@ describe GithubBitbucketDeployer::Git do
 
       let(:retry_git_command) do
         expect(git_repo).to have_received(:push).exactly(retry_limit).times
+      end
+    end
+
+    it_behaves_like 'a git ssh wrapper' do
+      def run_git_command
+        expect(git_repo).to receive(:push) { yield }
+      end
+    end
+  end
+
+  describe '#add_remote', :fakefs do
+    subject { add_remote }
+
+    let(:unrelated_remote) do
+      instance_double(::Git::Remote, url: 'git@heroku.com:my_app.git')
+    end
+
+    before do
+      allow(git_repo).to receive(:remote)
+        .with('heroku').and_return(unrelated_remote)
+    end
+
+    context 'with default remote name' do
+      let(:add_remote) { git.add_remote }
+
+      context 'when bitbucket remote already exists' do
+        it 'removes the existing remote' do
+          expect(bitbucket_remote).to receive(:remove)
+          add_remote
+        end
+
+        it 'does not remove the unrelated remote' do
+          expect(unrelated_remote).to_not receive(:remove)
+          add_remote
+        end
+
+        it 'adds the new bitbucket remote' do
+          expect(git_repo).to receive(:add_remote)
+            .with('bitbucket', bitbucket_repo_url)
+          add_remote
+        end
+      end
+
+      context 'when bitbucket remote does not exist' do
+        let(:bitbucket_remote) { empty_remote }
+
+        it 'does not remove any existing remotes' do
+          expect(empty_remote).to_not receive(:remove)
+          expect(unrelated_remote).to_not receive(:remove)
+          add_remote
+        end
+
+        it 'adds the new bitbucket remote' do
+          expect(git_repo).to receive(:add_remote)
+            .with('bitbucket', bitbucket_repo_url)
+          add_remote
+        end
+      end
+    end
+
+    context 'with custom remote name' do
+      let(:add_remote) { git.add_remote(remote_name) }
+
+      let(:custom_remote) do
+        instance_double(::Git::Remote, url: 'git@some_server.com:my_app.git',
+                                       remove: true)
+      end
+      let(:remote_name) { 'custom_remote' }
+      before do
+        allow(git_repo).to receive(:remote)
+          .with(remote_name).and_return(custom_remote)
+      end
+
+      context 'when custom remote already exists' do
+        it 'removes the existing remote' do
+          expect(custom_remote).to receive(:remove)
+          add_remote
+        end
+
+        it 'does not remove unrelated remotes' do
+          expect(unrelated_remote).to_not receive(:remove)
+          add_remote
+        end
+
+        it 'creates the new custom remote' do
+          expect(git_repo).to receive(:add_remote)
+            .with(remote_name, bitbucket_repo_url)
+          add_remote
+        end
+      end
+
+      context 'when custom remote does not already exist' do
+        let(:custom_remote) { empty_remote }
+
+        it 'does not remove any existing remotes' do
+          expect(empty_remote).to_not receive(:remove)
+          expect(unrelated_remote).to_not receive(:remove)
+          add_remote
+        end
+
+        it 'creates the new custom remote' do
+          expect(git_repo).to receive(:add_remote)
+            .with(remote_name, bitbucket_repo_url)
+          add_remote
+        end
       end
     end
   end

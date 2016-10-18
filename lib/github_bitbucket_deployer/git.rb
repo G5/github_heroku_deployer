@@ -21,11 +21,9 @@ module GithubBitbucketDeployer
 
     def push_app_to_bitbucket(remote = 'bitbucket', branch = 'master')
       logger.info('push_app_to_bitbucket')
-      update_remote(remote)
-      with_ssh do
-        yield(repo) if block_given?
-        push(remote, branch)
-      end
+      add_remote(remote)
+      with_ssh { yield(repo) } if block_given?
+      push(remote, branch)
     end
 
     def repo
@@ -34,6 +32,48 @@ module GithubBitbucketDeployer
 
     def folder
       @folder ||= setup_folder
+    end
+
+    def clone
+      logger.info("git clone: cloning #{bitbucket_repo_url} to #{folder}")
+      run { ::Git.clone(bitbucket_repo_url, folder, log: logger) }
+    end
+
+    def pull
+      logger.info("git pull: pulling from #{folder}")
+      run { open.pull }
+      open
+    end
+
+    def open
+      logger.info('git open')
+      ::Git.open(folder, log: logger)
+    end
+
+    def push(remote, branch)
+      logger.info("git push: deploying #{repo.dir} to " \
+                  "#{repo.remote(remote).url} from branch #{branch}")
+      run { repo.push(remote, branch, force: true) }
+    end
+
+    def add_remote(remote = 'bitbucket')
+      logger.info("git add_remote: #{remote}")
+      repo.remote(remote).remove if repo.remote(remote).url
+      repo.add_remote(remote, bitbucket_repo_url)
+    end
+
+    private
+
+    def setup_folder
+      logger.info('setup_folder')
+      folder = File.join(repo_dir, Zlib.crc32(git_repo_name).to_s)
+      FileUtils.mkdir_p(folder).first
+    end
+
+    def setup_repo
+      logger.info('setup_repo')
+      update_working_copy
+      open
     end
 
     def update_working_copy
@@ -46,35 +86,13 @@ module GithubBitbucketDeployer
       File.exist?(git_config)
     end
 
-    def clone
-      logger.info('git clone')
-      with_ssh do
-        logger.info("cloning #{bitbucket_repo_url} to #{folder}")
-        run { ::Git.clone(bitbucket_repo_url, folder, log: logger) }
+    def run
+      Retriable.retriable(on: ::Git::GitExecuteError, tries: 3) do
+        with_ssh { yield }
       end
-    end
-
-    def pull
-      logger.info('git pull')
-      local_repo = open
-
-      with_ssh do
-        logger.info("pulling from #{folder}")
-        run { local_repo.pull }
-      end
-
-      local_repo
-    end
-
-    def open
-      logger.info('git open')
-      ::Git.open(folder, log: logger)
-    end
-
-    def push(remote, branch)
-      logger.info("deploying #{repo.dir} to #{repo.remote(remote).url}" \
-                  "from branch #{branch}")
-      run { repo.push(remote, branch, force: true) }
+    rescue ::Git::GitExecuteError => error
+      logger.error(error)
+      raise GithubBitbucketDeployer::CommandException, error
     end
 
     def with_ssh
@@ -82,33 +100,6 @@ module GithubBitbucketDeployer
         wrapper.set_env
         yield if block_given?
       end
-    end
-
-    private
-
-    def setup_folder
-      logger.info('setup_folder')
-      folder = File.join(@repo_dir, Zlib.crc32(@git_repo_name).to_s)
-      FileUtils.mkdir_p(folder).first
-    end
-
-    def setup_repo
-      logger.info('setup_repo')
-      update_working_copy
-      open
-    end
-
-    def update_remote(remote)
-      logger.info('update_remote')
-      repo.remote(remote).remove if repo.remote(remote).url
-      repo.add_remote(remote, bitbucket_repo_url)
-    end
-
-    def run
-      Retriable.retriable(on: ::Git::GitExecuteError, tries: 3) { yield }
-    rescue ::Git::GitExecuteError => error
-      logger.error(error)
-      raise GithubBitbucketDeployer::CommandException, error
     end
   end
 end
