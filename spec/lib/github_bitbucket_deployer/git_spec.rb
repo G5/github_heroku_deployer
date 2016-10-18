@@ -341,7 +341,7 @@ describe GithubBitbucketDeployer::Git do
     end
   end
 
-  describe '#push' do
+  describe '#push', :fakefs do
     subject(:push) { git.push(remote_name, branch) }
 
     let(:remote_name) { 'bitbucket' }
