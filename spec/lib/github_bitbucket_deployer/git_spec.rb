@@ -108,71 +108,26 @@ describe GithubBitbucketDeployer::Git do
       context 'when local repo already exists' do
         before { create_local_repo(working_dir) }
 
-        let(:other_remote) do
-          instance_double(::Git::Remote, url: 'git@heroku.com:my_app.git')
-        end
-        before do
-          allow(git_repo).to receive(:remote)
-            .with('heroku').and_return(other_remote)
-        end
-
         it 'pulls from the remote repo' do
           expect(git_repo).to receive(:pull).and_return(true)
           push_app
         end
 
-        context 'when bitbucket remote exists' do
-          before do
-            allow(git_repo).to receive(:remote)
-              .with('bitbucket').and_return(bitbucket_remote)
-          end
-
-          it 'removes the existing remote' do
-            expect(bitbucket_remote).to receive(:remove)
-            push_app
-          end
-
-          it 'does not remove the unrelated remote' do
-            expect(other_remote).to_not receive(:remove)
-            push_app
-          end
-
-          it 'creates the bitbucket remote anew' do
-            expect(git_repo).to receive(:add_remote)
-              .with('bitbucket', bitbucket_repo_url)
-            push_app
-          end
-
-          it 'force pushes master to bitbucket' do
-            expect(git_repo).to receive(:push)
-              .with('bitbucket', 'master', force: true)
-            push_app
-          end
+        it 'removes the existing remote' do
+          expect(bitbucket_remote).to receive(:remove)
+          push_app
         end
 
-        context 'when bitbucket remote does not exist' do
-          before do
-            allow(git_repo).to receive(:remote)
-              .with('bitbucket').and_return(empty_remote)
-          end
+        it 'creates the bitbucket remote anew' do
+          expect(git_repo).to receive(:add_remote)
+            .with('bitbucket', bitbucket_repo_url)
+          push_app
+        end
 
-          it 'does not remove any remotes' do
-            expect(bitbucket_remote).to_not receive(:remove)
-            expect(other_remote).to_not receive(:remove)
-            push_app
-          end
-
-          it 'creates the bitbucket remote' do
-            expect(git_repo).to receive(:add_remote)
-              .with('bitbucket', bitbucket_repo_url)
-            push_app
-          end
-
-          it 'force pushes master to bitbucket' do
-            expect(git_repo).to receive(:push)
-              .with('bitbucket', 'master', force: true)
-            push_app
-          end
+        it 'force pushes master to bitbucket' do
+          expect(git_repo).to receive(:push)
+            .with('bitbucket', 'master', force: true)
+          push_app
         end
       end
 
@@ -209,104 +164,29 @@ describe GithubBitbucketDeployer::Git do
       let(:remote_name) { 'my_git_server' }
       let(:branch) { 'my_topic_branch' }
 
-      context 'when local git repo exists' do
-        before { create_local_repo(working_dir) }
+      before { create_local_repo(working_dir) }
 
-        let(:custom_remote) do
-          instance_double(Git::Remote, url: bitbucket_repo_url,
-                                       remove: true)
-        end
-
-        before do
-          allow(git_repo).to receive(:remote)
-            .with(remote_name).and_return(custom_remote)
-        end
-
-        it 'pulls from the remote repo' do
-          expect(git_repo).to receive(:pull).and_return(true)
-          push_app
-        end
-
-        context 'when custom remote already exists' do
-          it 'removes the old remote' do
-            expect(custom_remote).to receive(:remove)
-            push_app
-          end
-
-          it 'creates the new remote' do
-            expect(git_repo).to receive(:add_remote)
-              .with(remote_name, bitbucket_repo_url)
-            push_app
-          end
-
-          it 'yields to the block' do
-            expect do |block|
-              git.push_app_to_bitbucket(remote_name, branch, &block)
-            end.to yield_with_args(git_repo)
-          end
-
-          it 'forces pushes the branch' do
-            expect(git_repo).to receive(:push)
-              .with(remote_name, branch, force: true)
-            push_app
-          end
-        end
-
-        context 'when custom remote does not exist' do
-          let(:custom_remote) { empty_remote }
-
-          it 'does not remove any remotes' do
-            expect(custom_remote).to_not receive(:remove)
-            push_app
-          end
-
-          it 'creates the new remote' do
-            expect(git_repo).to receive(:add_remote)
-              .with(remote_name, bitbucket_repo_url)
-            push_app
-          end
-
-          it 'yields to the block' do
-            expect do |block|
-              git.push_app_to_bitbucket(remote_name, branch, &block)
-            end.to yield_with_args(git_repo)
-          end
-
-          it 'force pushes the branch' do
-            expect(git_repo).to receive(:push)
-              .with(remote_name, branch, force: true)
-            push_app
-          end
-        end
+      it 'pulls from the remote repo' do
+        expect(git_repo).to receive(:pull).and_return(true)
+        push_app
       end
 
-      context 'when local git repo does not exist' do
-        let(:custom_remote) { empty_remote }
+      it 'creates the new remote' do
+        expect(git_repo).to receive(:add_remote)
+          .with(remote_name, bitbucket_repo_url)
+        push_app
+      end
 
-        it 'clones the repo' do
-          expect(::Git).to receive(:clone)
-            .with(bitbucket_repo_url, working_dir, log: logger)
-            .and_return(git_repo)
-          push_app
-        end
+      it 'yields to the block' do
+        expect do |block|
+          git.push_app_to_bitbucket(remote_name, branch, &block)
+        end.to yield_with_args(git_repo)
+      end
 
-        it 'creates the remote' do
-          expect(git_repo).to receive(:add_remote)
-            .with(remote_name, bitbucket_repo_url)
-          push_app
-        end
-
-        it 'yields the repo to the block' do
-          expect do |block|
-            git.push_app_to_bitbucket(remote_name, branch, &block)
-          end.to yield_with_args(git_repo)
-        end
-
-        it 'forces pushes the branch' do
-          expect(git_repo).to receive(:push)
-            .with(remote_name, branch, force: true)
-          push_app
-        end
+      it 'forces pushes the branch' do
+        expect(git_repo).to receive(:push)
+          .with(remote_name, branch, force: true)
+        push_app
       end
     end
   end
@@ -393,6 +273,33 @@ describe GithubBitbucketDeployer::Git do
     end
   end
 
+  describe '#clone', :fakefs do
+    subject(:clone) { git.clone }
+
+    it { is_expected.to be(git_repo) }
+
+    it 'clones the bitbucket repo into the local folder' do
+      expect(::Git).to receive(:clone)
+        .with(bitbucket_repo_url, working_dir, log: logger)
+        .and_return(git_repo)
+      clone
+    end
+
+    it_behaves_like 'a git error handler' do
+      before { allow(::Git).to receive(:clone).and_raise(error) }
+
+      let(:retry_git_command) do
+        expect(::Git).to have_received(:clone).exactly(retry_limit).times
+      end
+    end
+
+    it_behaves_like 'a git ssh wrapper' do
+      def run_git_command
+        expect(::Git).to receive(:clone) { yield }
+      end
+    end
+  end
+
   describe '#pull', :fakefs do
     subject(:pull) { git.pull }
 
@@ -418,33 +325,6 @@ describe GithubBitbucketDeployer::Git do
     it_behaves_like 'a git ssh wrapper' do
       def run_git_command
         expect(git_repo).to receive(:pull) { yield }
-      end
-    end
-  end
-
-  describe '#clone', :fakefs do
-    subject(:clone) { git.clone }
-
-    it { is_expected.to be(git_repo) }
-
-    it 'clones the bitbucket repo into the local folder' do
-      expect(::Git).to receive(:clone)
-        .with(bitbucket_repo_url, working_dir, log: logger)
-        .and_return(git_repo)
-      clone
-    end
-
-    it_behaves_like 'a git error handler' do
-      before { allow(::Git).to receive(:clone).and_raise(error) }
-
-      let(:retry_git_command) do
-        expect(::Git).to have_received(:clone).exactly(retry_limit).times
-      end
-    end
-
-    it_behaves_like 'a git ssh wrapper' do
-      def run_git_command
-        expect(::Git).to receive(:clone) { yield }
       end
     end
   end
