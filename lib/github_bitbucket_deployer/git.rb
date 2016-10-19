@@ -92,10 +92,14 @@ module GithubBitbucketDeployer
     end
 
     def with_ssh
+      @old_git_ssh = ENV['GIT_SSH']
+
       GitSSHWrapper.with_wrapper(private_key: id_rsa) do |wrapper|
         wrapper.set_env
         yield if block_given?
       end
+    ensure
+      ENV['GIT_SSH'] = @old_git_ssh
     end
   end
 end

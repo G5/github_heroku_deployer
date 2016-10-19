@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   gem.add_dependency "git", "~> 1.3"
-  gem.add_dependency "git-ssh-wrapper", "~> 0.2"
+  gem.add_dependency "git-ssh-wrapper", "~> 0.1"
   gem.add_dependency "retriable", "~> 2.1"
 
   gem.add_development_dependency "simplecov", "~> 0.7.1"
