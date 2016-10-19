@@ -52,50 +52,24 @@ describe GithubBitbucketDeployer::Git do
   describe '#initialize' do
     subject { git }
 
-    context 'without options' do
-      let(:options) { Hash.new }
-
-      it 'has no bitbucket_repo_url' do
-        expect(git.bitbucket_repo_url).to be_nil
-      end
-
-      it 'has no git_repo_name' do
-        expect(git.git_repo_name).to be_nil
-      end
-
-      it 'has no id_rsa' do
-        expect(git.id_rsa).to be_nil
-      end
-
-      it 'has no repo_dir' do
-        expect(git.repo_dir).to be_nil
-      end
-
-      it 'has a default logger' do
-        expect(git.logger).to be_an_instance_of(Logger)
-      end
+    it 'sets the bitbucket_repo_url' do
+      expect(git.bitbucket_repo_url).to eq(bitbucket_repo_url)
     end
 
-    context 'with options' do
-      it 'sets the bitbucket_repo_url' do
-        expect(git.bitbucket_repo_url).to eq(bitbucket_repo_url)
-      end
+    it 'sets the git_repo_name' do
+      expect(git.git_repo_name).to eq(git_repo_name)
+    end
 
-      it 'sets the git_repo_name' do
-        expect(git.git_repo_name).to eq(git_repo_name)
-      end
+    it 'sets the id_rsa' do
+      expect(git.id_rsa).to eq(id_rsa)
+    end
 
-      it 'sets the id_rsa' do
-        expect(git.id_rsa).to eq(id_rsa)
-      end
+    it 'sets the logger' do
+      expect(git.logger).to eq(logger)
+    end
 
-      it 'sets the logger' do
-        expect(git.logger).to eq(logger)
-      end
-
-      it 'sets the repo_dir' do
-        expect(git.repo_dir).to eq(repo_dir)
-      end
+    it 'sets the repo_dir' do
+      expect(git.repo_dir).to eq(repo_dir)
     end
   end
 
