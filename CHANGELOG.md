@@ -1,4 +1,4 @@
-## v1.0.0.beta (2016-10-17)
+## v1.0.0 (2016-11-04)
 
 * Enhancements to error handling with general refactoring of
   `GithubBitbucketDeployer::Git`

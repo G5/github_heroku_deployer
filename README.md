@@ -8,7 +8,7 @@ Ruby gem to deploy public and private Github repos to Bitbucket
 
 ## Current Version
 
-1.0.0.beta
+1.0.0
 
 ## Requirements
 
