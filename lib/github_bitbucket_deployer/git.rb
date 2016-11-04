@@ -1,8 +1,11 @@
-require "git"
-require "git-ssh-wrapper"
+require 'git'
+require 'git-ssh-wrapper'
+require 'retriable'
+require 'github_bitbucket_deployer/clone_logger_fix'
 
 module GithubBitbucketDeployer
   class Git
+    attr_reader :bitbucket_repo_url, :git_repo_name, :id_rsa, :repo_dir, :logger
 
     def initialize(options)
       @bitbucket_repo_url = options[:bitbucket_repo_url]
@@ -12,92 +15,91 @@ module GithubBitbucketDeployer
       @repo_dir = options[:repo_dir]
     end
 
-    def push_app_to_bitbucket(remote="bitbucket", branch="master", &block)
-      @logger.info "push_app_to_bitbucket"
-      wrapper = ssh_wrapper
-      run "cd #{repo.dir}; git remote rm #{remote}" if repo.remote(remote).url
-      repo.add_remote(remote, @bitbucket_repo_url)
-      yield(repo) if block_given?
-      @logger.info "deploying #{repo.dir} to #{repo.remote(remote).url} from branch #{branch}"
-      run "cd #{repo.dir}; env #{wrapper.git_ssh} git push -f #{remote} #{branch}"
-    ensure
-      wrapper.unlink
+    def push_app_to_bitbucket(remote = 'bitbucket', branch = 'master')
+      logger.info('push_app_to_bitbucket')
+      add_remote(remote)
+      with_ssh { yield(repo) } if block_given?
+      push(remote, branch)
     end
 
     def repo
       @repo ||= setup_repo
     end
 
-    def setup_repo
-      @logger.info "setup_repo"
-      clone_or_pull
-      open
-    end
-
     def folder
       @folder ||= setup_folder
     end
 
+    def clone
+      logger.info("git clone: cloning #{bitbucket_repo_url} to #{folder}")
+      run { ::Git.clone(bitbucket_repo_url, folder, log: logger) }
+    end
+
+    def pull
+      logger.info("git pull: pulling from #{folder}")
+      run { open.pull }
+      open
+    end
+
+    def open
+      logger.info('git open')
+      ::Git.open(folder, log: logger)
+    end
+
+    def push(remote, branch)
+      logger.info("git push: deploying #{repo.dir} to " \
+                  "#{repo.remote(remote).url} from branch #{branch}")
+      run { repo.push(remote, branch, force: true) }
+    end
+
+    def add_remote(remote = 'bitbucket')
+      logger.info("git add_remote: #{remote}")
+      repo.remote(remote).remove if repo.remote(remote).url
+      repo.add_remote(remote, bitbucket_repo_url)
+    end
+
+    private
+
     def setup_folder
-      @logger.info "setup_folder"
-      folder = File.join(@repo_dir, Zlib.crc32(@git_repo_name).to_s)
+      logger.info('setup_folder')
+      folder = File.join(repo_dir, Zlib.crc32(git_repo_name).to_s)
       FileUtils.mkdir_p(folder).first
     end
 
-    def clone_or_pull
-      @logger.info "clone_or_pull"
+    def setup_repo
+      logger.info('setup_repo')
+      update_working_copy
+      open
+    end
+
+    def update_working_copy
+      logger.info('update_working_copy')
       exists_locally? ? pull : clone
     end
 
     def exists_locally?
-      File.exists?(File.join(folder, ".git", "config"))
+      git_config = File.join(folder, '.git', 'config')
+      File.exist?(git_config)
     end
 
-    def clone
-      @logger.info "git clone"
-      wrapper = ssh_wrapper
-      @logger.info "cloning #{@bitbucket_repo_url} to #{folder}"
-      run "unset GIT_WORK_TREE; env #{wrapper.git_ssh} git clone #{@bitbucket_repo_url} #{folder}"
-    ensure
-      wrapper.unlink
-    end
-
-    def pull
-      @logger.info "git pull"
-      wrapper = ssh_wrapper
-      dir = Dir.pwd # need to cd back to here
-      @logger.info "pulling from #{folder}"
-      run "cd #{folder}; env #{wrapper.git_ssh} git pull; cd #{dir}"
-    ensure
-      wrapper.unlink
-    end
-
-    def open
-      @logger.info "git open"
-      ::Git.open(folder)
-    end
-
-    def ssh_wrapper
-      GitSSHWrapper.new(private_key_path: id_rsa_path)
-    end
-
-    def id_rsa_path
-      file = Tempfile.new("id_rsa")
-      file.write(@id_rsa)
-      file.rewind
-      file.path
-    end
-
-    def run(command)
-      @logger.info "git run command: #{command}"
-      result = system("#{command} 2>&1")
-      sleep 20
-      if result
-        @logger.info $?.to_s
-      else
-        raise GithubBitbucketDeployer::CommandException, $?.to_s
+    def run
+      Retriable.retriable(on: ::Git::GitExecuteError, tries: 3) do
+        with_ssh { yield }
       end
+    rescue ::Git::GitExecuteError => error
+      logger.error(error)
+      raise GithubBitbucketDeployer::CommandException, error
+    end
+
+    def with_ssh
+      @old_git_ssh = ENV['GIT_SSH']
+
+      GitSSHWrapper.with_wrapper(private_key: id_rsa) do |wrapper|
+        wrapper.set_env
+        yield if block_given?
+      end
+    ensure
+      ENV['GIT_SSH'] = @old_git_ssh
     end
   end
 end
-

@@ -8,14 +8,12 @@ Ruby gem to deploy public and private Github repos to Bitbucket
 
 ## Current Version
 
-0.3.1
-
+1.0.0.beta
 
 ## Requirements
 
-* ["git", "~> 1.2.5"](http://rubygems.org/gems/git)
-* ["git-ssh-wrapper", "~> 0.1.0"](http://rubygems.org/gems/git-ssh-wrapper)
-
+* [git](https://git-scm.com/) >= 1.6.0.0
+* [ruby](https://www.ruby-lang.org/) >= 2.2
 
 ## Installation
 

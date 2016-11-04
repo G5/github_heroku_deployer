@@ -1,33 +1,33 @@
 require 'spec_helper'
-require 'github_bitbucket_deployer'
 
 describe GithubBitbucketDeployer do
-  it { should respond_to :configuration }
-  it { should respond_to :configure }
-  it { should respond_to :deploy }
+  it { is_expected.to respond_to(:configuration) }
+  it { is_expected.to respond_to(:configure) }
+  it { is_expected.to respond_to(:deploy) }
 
-  describe "::configuration" do
+  describe ".configuration" do
+    subject(:config) { GithubBitbucketDeployer.configuration }
+
     it "should be the configuration object" do
-      GithubBitbucketDeployer.configuration.should(
-        be_a_kind_of GithubBitbucketDeployer::Configuration)
+      expect(config).to be_a_kind_of(GithubBitbucketDeployer::Configuration)
     end
 
     it "give a new instance if non defined" do
       GithubBitbucketDeployer.configuration = nil
-      GithubBitbucketDeployer.configuration.should(
-        be_a_kind_of GithubBitbucketDeployer::Configuration)
+      expect(config).to be_a_kind_of(GithubBitbucketDeployer::Configuration)
     end
   end
 
-  describe "::configure" do
+  describe ".configure" do
     it "should yield the configuration object" do
       GithubBitbucketDeployer.configure do |config|
-        config.should equal(GithubBitbucketDeployer.configuration)
+        expect(config).to equal(GithubBitbucketDeployer.configuration)
       end
     end
   end
 
   describe "::deploy" do
+    subject(:deploy) { GithubBitbucketDeployer.deploy }
 
     context "when unconfigured" do
       before :each do
@@ -37,16 +37,15 @@ describe GithubBitbucketDeployer do
       end
 
       it "requires github_repo to be set" do
-        lambda { GithubBitbucketDeployer.deploy }.should(
-          raise_error ::GithubBitbucketDeployer::ConfigurationException)
+        expect { deploy }.to raise_error(GithubBitbucketDeployer::ConfigurationException)
       end
     end
 
     # TODO: how can I test these better?
     context "when configured" do
       before :each do
-        @deployer = mock("github_bitbucket_deployer")
-        @deployer.stub!(:deploy).and_return(true)
+        @deployer = double("github_bitbucket_deployer")
+        allow(@deployer).to receive(:deploy).and_return(true)
       end
 
       it "overrides defaults" do
@@ -54,9 +53,8 @@ describe GithubBitbucketDeployer do
           config.id_rsa = ""
         end
 
-        override = ENV["ID_RSA"]
-        override.should_not equal GithubBitbucketDeployer.configuration[:id_rsa]
-        @deployer.deploy(id_rsa: override).should be true
+        override = 'override-value'
+        expect(@deployer.deploy(id_rsa: override)).to be true
       end
 
     end
