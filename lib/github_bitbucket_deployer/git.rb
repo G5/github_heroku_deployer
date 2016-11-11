@@ -13,7 +13,7 @@ module GithubBitbucketDeployer
       @id_rsa = options[:id_rsa]
       @logger = options[:logger]
       @repo_dir = options[:repo_dir]
-      @force = options[:force].nil? ? true : options[:force]
+      @force = options.fetch(:force, true)
     end
 
     def push_app_to_bitbucket(remote = 'bitbucket', branch = 'master')
