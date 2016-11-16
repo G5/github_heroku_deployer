@@ -4,6 +4,7 @@ describe GithubBitbucketDeployer::Git do
   include GitHelpers
 
   let(:git) { described_class.new(options) }
+  let(:gentle_git) { described_class.new(gentle_options) }
 
   let(:options) do
     { bitbucket_repo_url: bitbucket_repo_url,
@@ -12,6 +13,8 @@ describe GithubBitbucketDeployer::Git do
       logger: logger,
       repo_dir: repo_dir }
   end
+
+  let(:gentle_options) { options.merge(force: false) }
 
   let(:bitbucket_repo_url) { 'git@bitbucket.org:g5dev/some_repo.git' }
   let(:git_repo_name) { 'some_repo' }
@@ -71,6 +74,14 @@ describe GithubBitbucketDeployer::Git do
     it 'sets the repo_dir' do
       expect(git.repo_dir).to eq(repo_dir)
     end
+
+    it 'defaults to a forced push' do
+      expect(git.force).to be true
+    end
+
+    it 'can also be gentle' do
+      expect(gentle_git.force).to be false
+    end
   end
 
   describe '#push_app_to_bitbucket', :fakefs do
@@ -102,6 +113,12 @@ describe GithubBitbucketDeployer::Git do
           expect(git_repo).to receive(:push)
             .with('bitbucket', 'master', force: true)
           push_app
+        end
+
+        it 'can also be gentle' do
+          expect(git_repo).to receive(:push)
+            .with('bitbucket', 'master', force: false)
+          gentle_git.push_app_to_bitbucket
         end
       end
 
