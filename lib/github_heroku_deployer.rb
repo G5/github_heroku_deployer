@@ -90,6 +90,12 @@ module GithubHerokuDeployer
       Heroku.new(options).post_ps_scale(process, quantity)
     end
 
+    def heroku_put_stack(stack, options={})
+      options = configuration.merge(options)
+      validate_options(options)
+      Heroku.new(options).put_stack(stack)
+    end
+
     def validate_options(options)
       configuration.validate_presence(options)
     end

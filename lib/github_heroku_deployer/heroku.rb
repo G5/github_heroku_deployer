@@ -59,6 +59,11 @@ module GithubHerokuDeployer
       heroku.delete_addon(@heroku_app_name, addon)
     end
 
+    def put_stack(stack)
+      heroku.put_stack(@heroku_app_name, stack)
+    end
+
+
     def post_ps_scale(process, quantity)
       heroku.post_ps_scale(@heroku_app_name, process, quantity)
     end
