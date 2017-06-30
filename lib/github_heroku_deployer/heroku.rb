@@ -12,7 +12,8 @@ module GithubHerokuDeployer
     end
 
     def heroku
-      @heroku ||= ::Heroku::API.new(api_key: @heroku_api_key)
+      #platform-api
+      @heroku ||= ::PlatformAPI.connect_oauth(@heroku_api_key)
     end
 
 
@@ -22,15 +23,17 @@ module GithubHerokuDeployer
 
     def find_or_create_app
       find_app
-    rescue ::Heroku::API::Errors::NotFound
+    rescue ::Excon::Errors::NotFound
       create_app
     end
 
     def find_app
-      heroku.get_app(@heroku_app_name)
+      #platform-api
+      heroku.app.info(@heroku_app_name)
     end
 
     def create_app
+      #platform-api
       @logger.info("Creating Heroku app with options: #{platform_api_options}")
       heroku_platform_api.organization_app.create(platform_api_options)
     end
@@ -48,11 +51,13 @@ module GithubHerokuDeployer
     end
 
     def config_set(config_vars)
-      heroku.put_config_vars(@heroku_app_name, config_vars)
+      #platform-api
+      heroku.config_var.update(@heroku_app_name, config_vars)
     end
 
     def addon_add(addon, addon_options={})
-      heroku.post_addon(@heroku_app_name, addon, addon_options)
+      #platform-api (minus addon_options support)
+      heroku.addon.create(@heroku_app_name, {plan => addon})
     end
 
     def addon_remove(addon)
@@ -60,7 +65,8 @@ module GithubHerokuDeployer
     end
 
     def post_ps_scale(process, quantity)
-      heroku.post_ps_scale(@heroku_app_name, process, quantity)
+      #platform-api
+      heroku.formation.update(@heroku_app_name, process, {"quantity" => quantity})
     end
 
     # def add_deployhooks_http(url)
