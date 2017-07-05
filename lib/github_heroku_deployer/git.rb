@@ -12,17 +12,17 @@ module GithubHerokuDeployer
       @repo_dir = options[:repo_dir]
     end
 
-    def push_app_to_heroku(remote="heroku", branch="master", &block)
+    def push_app_to_heroku(remote="heroku", branch="update-gemfilelock", &block)
       wrapper = ssh_wrapper
       run "cd #{repo.dir}; git remote rm #{remote}" if repo.remote(remote).url
       repo.add_remote(remote, @heroku_repo)
       yield(repo) if block_given?
       @logger.info "deploying #{repo.dir} to #{repo.remote(remote).url} from branch #{branch}"
-      # modified this to push non custom branch for local testing
-      run "cd #{repo.dir}; env #{wrapper.git_ssh} git checkout #{branch}; env #{wrapper.git_ssh} git push -f #{remote} #{branch}"
+      run "cd #{repo.dir}; git checkout #{branch}; env #{wrapper.git_ssh} git push -f #{remote} #{branch}:master"
     ensure
       wrapper.unlink
     end
+
 
     def repo
       @repo ||= setup_repo
