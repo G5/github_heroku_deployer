@@ -57,7 +57,7 @@ module GithubHerokuDeployer
 
     def addon_add(addon, addon_options={})
       #platform-api (minus addon_options support)
-      heroku.addon.create(@heroku_app_name, {plan => addon})
+      heroku.addon.create(@heroku_app_name, {"plan" => addon})
     end
 
     def addon_remove(addon)
