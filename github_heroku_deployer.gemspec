@@ -16,7 +16,7 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   gem.add_dependency "heroku-api", "~> 0.3.5"
-  gem.add_dependency "platform-api" "~> 2.1.0"
+  gem.add_dependency "platform-api", "~> 2.1.0"
   gem.add_dependency "git", "~> 1.2.5"
   gem.add_dependency "git-ssh-wrapper", "~> 0.1.0"
 
