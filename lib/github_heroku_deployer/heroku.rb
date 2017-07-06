@@ -47,7 +47,13 @@ module GithubHerokuDeployer
     end
 
     def run(command)
-      heroku.post_ps(@heroku_app_name, command)
+      #platform-api
+      run_dyno = {"attach": false,
+                            "command": command,
+                            "size": "Hobby",
+                            "type": "run",
+                            "time_to_live": 1800}
+      heroku.dyno.create(@heroku_app_name, run_dyno)
     end
 
     def config_set(config_vars)
@@ -56,8 +62,8 @@ module GithubHerokuDeployer
     end
 
     def addon_add(addon, addon_options={})
-      #platform-api (minus addon_options support)
-      heroku.addon.create(@heroku_app_name, {"plan" => addon})
+      #platform-api
+      heroku.addon.create(@heroku_app_name, {"plan" => {name: addon}, "config" => addon_options})
     end
 
     def addon_remove(addon)
