@@ -48,11 +48,11 @@ module GithubHerokuDeployer
 
     def run(command)
       #platform-api
-      run_dyno = {"attach": false,
-                            "command": command,
-                            "size": "Hobby",
-                            "type": "run",
-                            "time_to_live": 1800}
+      run_dyno = {"attach"=> false,
+                            "command"=> command,
+                            "size"=> "Hobby",
+                            "type"=> "run",
+                            "time_to_live"=> 1800}
       heroku.dyno.create(@heroku_app_name, run_dyno)
     end
 
