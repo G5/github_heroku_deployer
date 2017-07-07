@@ -1,4 +1,3 @@
-require "heroku-api"
 require "platform-api"
 
 module GithubHerokuDeployer
@@ -15,7 +14,6 @@ module GithubHerokuDeployer
       #platform-api
       @heroku ||= ::PlatformAPI.connect_oauth(@heroku_api_key)
     end
-
 
     def app
       @app ||= find_or_create_app
@@ -39,11 +37,13 @@ module GithubHerokuDeployer
     end
 
     def restart_app
-      heroku.post_ps_restart(@heroku_app_name)
+      #platform-api
+      heroku.dyno.restart_all(@heroku_app_name)
     end
 
     def destroy_app
-      heroku.delete_app(@heroku_app_name)
+      #platform-api
+      heroku.app.delete(@heroku_app_name)
     end
 
     def run(command)
@@ -67,7 +67,8 @@ module GithubHerokuDeployer
     end
 
     def addon_remove(addon)
-      heroku.delete_addon(@heroku_app_name, addon)
+      #platform-api
+      heroku.addon.delete(@heroku_app_name, addon)
     end
 
     def post_ps_scale(process, quantity)
