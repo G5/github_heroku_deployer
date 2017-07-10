@@ -19,7 +19,7 @@ module GithubHerokuDeployer
       repo.add_remote(remote, @heroku_repo)
       yield(repo) if block_given?
       @logger.info "deploying #{repo.dir} to #{repo.remote(remote).url} from branch #{@branch}"
-      run "cd #{repo.dir}; git checkout #{@branch}; env #{wrapper.git_ssh} git push -f #{remote} #{@branch}"
+      run "cd #{repo.dir}; git checkout #{@branch}; env #{wrapper.git_ssh} git push -f #{remote} #{@branch}:master"
     ensure
       wrapper.unlink
     end
