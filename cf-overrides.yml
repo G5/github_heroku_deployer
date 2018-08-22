@@ -1,1 +1,6 @@
 BaseImageTag: "2.3-v1.0.2"
+PreBundle: |-
+  RUN apt-get update && apt-get install -y dnsutils netcat
+  COPY Rakefile /app/Rakefile
+  COPY github_bitbucket_deployer.gemspec /app/github_bitbucket_deployer.gemspec
+  COPY lib/github_bitbucket_deployer/version.rb /app/lib/github_bitbucket_deployer/version.rb
