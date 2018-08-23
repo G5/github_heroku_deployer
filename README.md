@@ -1,6 +1,7 @@
 # Github Bitbucket Deployer
-[![Codefresh build status]( https://g.codefresh.io/api/badges/pipeline/g5dev/g5search%2Fgithub_bitbucket_deployer%2Fgithub_bitbucket_deployer?branch=so-fresh-and-so-clean&key=eyJhbGciOiJIUzI1NiJ9.NWFjNjdhZDQzZmI2NmYwMDAxNTc4NDU0.tFs73TZYRDhdncaCsz-YDwgCsgwKVeQrKY3dygI0GCM&type=cf-1)]( https://g.codefresh.io/repositories/g5search/github_bitbucket_deployer/builds?filter=trigger:build;branch:so-fresh-and-so-clean;service:5b7c82eeaedcd09cebccbed5~github_bitbucket_deployer)
-[![Code Climate](https://codeclimate.com/github/G5/github_bitbucket_deployer.png)](https://codeclimate.com/github/G5/github_bitbucket_deployer)
+[![Codefresh build status]( https://g.codefresh.io/api/badges/pipeline/g5dev/g5search%2Fgithub_bitbucket_deployer%2Fgithub_bitbucket_deployer?branch=master&key=eyJhbGciOiJIUzI1NiJ9.NWFjNjdhZDQzZmI2NmYwMDAxNTc4NDU0.tFs73TZYRDhdncaCsz-YDwgCsgwKVeQrKY3dygI0GCM&type=cf-1)]( https://g.codefresh.io/repositories/g5search/github_bitbucket_deployer/builds?filter=trigger:build;branch:master;service:5b7c82eeaedcd09cebccbed5~github_bitbucket_deployer)
+[![Maintainability](https://api.codeclimate.com/v1/badges/433a307160a975b54a4f/maintainability)](https://codeclimate.com/repos/5762d216bb2a0c006d0019a1/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/433a307160a975b54a4f/test_coverage)](https://codeclimate.com/repos/5762d216bb2a0c006d0019a1/test_coverage)
 
 Ruby gem to deploy public and private Github repos to Bitbucket
 
