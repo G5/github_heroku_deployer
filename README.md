@@ -1,6 +1,5 @@
 # Github Bitbucket Deployer
-
-[![Build Status](https://travis-ci.org/G5/github_bitbucket_deployer.png?branch=master)](https://travis-ci.org/G5/github_bitbucket_deployer)
+[![Codefresh build status]( https://g.codefresh.io/api/badges/pipeline/g5dev/g5search%2Fgithub_bitbucket_deployer%2Fgithub_bitbucket_deployer?branch=so-fresh-and-so-clean&key=eyJhbGciOiJIUzI1NiJ9.NWFjNjdhZDQzZmI2NmYwMDAxNTc4NDU0.tFs73TZYRDhdncaCsz-YDwgCsgwKVeQrKY3dygI0GCM&type=cf-1)]( https://g.codefresh.io/repositories/g5search/github_bitbucket_deployer/builds?filter=trigger:build;branch:so-fresh-and-so-clean;service:5b7c82eeaedcd09cebccbed5~github_bitbucket_deployer)
 [![Code Climate](https://codeclimate.com/github/G5/github_bitbucket_deployer.png)](https://codeclimate.com/github/G5/github_bitbucket_deployer)
 
 Ruby gem to deploy public and private Github repos to Bitbucket
