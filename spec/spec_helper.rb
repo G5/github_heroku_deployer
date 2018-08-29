@@ -4,8 +4,8 @@ SimpleCov.start
 require 'rubygems'
 require 'rspec'
 require 'pp' # See https://github.com/fakefs/fakefs/issues/99
-require 'pry-byebug'
 require 'fakefs/spec_helpers'
+require 'zlib'
 
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f }
 
