@@ -1,3 +1,3 @@
 module GithubHerokuDeployer
-  VERSION = "0.4.3.pre.beta1"
+  VERSION = "0.5.1.pre.beta1"
 end

@@ -14,12 +14,11 @@ describe GithubHerokuDeployer::Heroku do
         heroku_api_key: "asdfghjkl",
         heroku_app_name: "asdfghjkl")
       response = mock(body: 'error')
-      heroku.stub("find_app").and_raise(::Heroku::API::Errors::NotFound.new('',response))
+      heroku.stub("find_app").and_raise(::Excon::Errors::NotFound.new('',response))
 
       organization_app = double(:organization_app, create: "created")
       platform_api = double(:mock, :organization_app => organization_app)
       PlatformAPI.stub(:connect_oauth).and_return(platform_api)
-
       organization_app.should_receive(:create).with(hash_including(organization: "test-org"))
 
       heroku.find_or_create_app
