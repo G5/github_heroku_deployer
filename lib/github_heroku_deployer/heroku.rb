@@ -71,6 +71,11 @@ module GithubHerokuDeployer
       heroku.addon.delete(@heroku_app_name, addon)
     end
 
+    def put_stack(stack)
+      heroku.put_stack(@heroku_app_name, stack)
+    end
+
+
     def post_ps_scale(process, quantity)
       #platform-api
       heroku.formation.update(@heroku_app_name, process, {"quantity" => quantity})
