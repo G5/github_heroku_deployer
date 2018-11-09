@@ -38,7 +38,7 @@ module GithubHerokuDeployer
 
     def set_buildpack(buildpack)
       #platform-api
-      @logger.info("Setting buildpack on Heroku app: #{buildpack}")
+      @logger.info("Setting buildpack on Heroku app: #{}")
       heroku.buildpack_installation.update(@heroku_app_name, buildpack)
     end
 
