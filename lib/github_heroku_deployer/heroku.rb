@@ -36,6 +36,12 @@ module GithubHerokuDeployer
       heroku_platform_api.organization_app.create(platform_api_options)
     end
 
+    def set_buildpack(buildpack)
+      #platform-api
+      @logger.info("Setting buildpack on Heroku app: #{}")
+      heroku.buildpack_installation.update(@heroku_app_name, buildpack)
+    end
+
     def restart_app
       #platform-api
       heroku.dyno.restart_all(@heroku_app_name)

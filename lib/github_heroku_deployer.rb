@@ -54,6 +54,12 @@ module GithubHerokuDeployer
       deploy(options, &block)
     end
 
+    def set_buildpack(buildpack, options={})
+      options = configuration.merge(options)
+      validate_options(options)
+      Heroku.new(options).set_buildpack(buildpack)
+    end
+
     def heroku_restart(options={})
       options = configuration.merge(options)
       validate_options(options)
