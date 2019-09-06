@@ -5,15 +5,16 @@ require 'github_bitbucket_deployer/clone_logger_fix'
 
 module GithubBitbucketDeployer
   class Git
-    attr_reader :bitbucket_repo_url, :git_repo_name, :id_rsa, :repo_dir, :logger, :force
+    attr_reader :bitbucket_repo_url, :git_repo_name, :id_rsa, :repo_dir, :logger, :force, :force_pristine_repo_dir
 
     def initialize(options)
-      @bitbucket_repo_url = options[:bitbucket_repo_url]
-      @git_repo_name = options[:git_repo_name]
-      @id_rsa = options[:id_rsa]
-      @logger = options[:logger]
-      @repo_dir = options[:repo_dir]
-      @force = options.fetch(:force, true)
+      @bitbucket_repo_url      = options[:bitbucket_repo_url]
+      @git_repo_name           = options[:git_repo_name]
+      @id_rsa                  = options[:id_rsa]
+      @logger                  = options[:logger]
+      @repo_dir                = options[:repo_dir]
+      @force                   = options.fetch(:force, true)
+      @force_pristine_repo_dir = options.fetch(:force_pristine_repo_dir, false)
     end
 
     def push_app_to_bitbucket(remote = 'bitbucket', branch = 'master')

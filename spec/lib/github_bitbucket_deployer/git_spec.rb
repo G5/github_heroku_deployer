@@ -55,6 +55,10 @@ describe GithubBitbucketDeployer::Git do
   describe '#initialize' do
     subject { git }
 
+    it 'defaults force_pristine_repo_dir to false' do
+      expect(git.force_pristine_repo_dir).to be_falsey
+    end
+
     it 'sets the bitbucket_repo_url' do
       expect(git.bitbucket_repo_url).to eq(bitbucket_repo_url)
     end
