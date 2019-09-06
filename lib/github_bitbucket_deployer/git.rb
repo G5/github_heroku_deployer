@@ -60,12 +60,29 @@ module GithubBitbucketDeployer
       repo.add_remote(remote, bitbucket_repo_url)
     end
 
+    def repo_dir_path
+      @repo_dir_name ||= File.join(repo_dir, Zlib.crc32(git_repo_name).to_s)
+    end
+
+    def update_working_copy
+      logger.info('update_working_copy')
+      begin
+        exists_locally? ? pull : clone
+      rescue => e
+        if force_pristine_repo_dir && !@already_forced_pristine_repo_dir
+          make_repo_dir_pristine
+          retry
+        else
+          raise e
+        end
+      end
+    end
+
     private
 
     def setup_folder
       logger.info('setup_folder')
-      folder = File.join(repo_dir, Zlib.crc32(git_repo_name).to_s)
-      FileUtils.mkdir_p(folder).first
+      FileUtils.mkdir_p(repo_dir_path).first
     end
 
     def setup_repo
@@ -74,9 +91,11 @@ module GithubBitbucketDeployer
       open
     end
 
-    def update_working_copy
-      logger.info('update_working_copy')
-      exists_locally? ? pull : clone
+    def make_repo_dir_pristine
+      logger.info('make_repo_dir_pristine')
+      @already_forced_pristine_repo_dir = true
+      @folder                           = nil
+      FileUtils.rm_rf(repo_dir_path)
     end
 
     def exists_locally?
