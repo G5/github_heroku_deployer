@@ -6,7 +6,7 @@ require 'rspec'
 require 'pp' # See https://github.com/fakefs/fakefs/issues/99
 require 'fakefs/spec_helpers'
 require 'zlib'
-
+require 'pry'
 Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f }
 
 ENV['ID_RSA']="id_rsa"

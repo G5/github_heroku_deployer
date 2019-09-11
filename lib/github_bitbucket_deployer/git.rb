@@ -5,15 +5,16 @@ require 'github_bitbucket_deployer/clone_logger_fix'
 
 module GithubBitbucketDeployer
   class Git
-    attr_reader :bitbucket_repo_url, :git_repo_name, :id_rsa, :repo_dir, :logger, :force
+    attr_reader :bitbucket_repo_url, :git_repo_name, :id_rsa, :repo_dir, :logger, :force, :force_pristine_repo_dir
 
     def initialize(options)
-      @bitbucket_repo_url = options[:bitbucket_repo_url]
-      @git_repo_name = options[:git_repo_name]
-      @id_rsa = options[:id_rsa]
-      @logger = options[:logger]
-      @repo_dir = options[:repo_dir]
-      @force = options.fetch(:force, true)
+      @bitbucket_repo_url      = options[:bitbucket_repo_url]
+      @git_repo_name           = options[:git_repo_name]
+      @id_rsa                  = options[:id_rsa]
+      @logger                  = options[:logger]
+      @repo_dir                = options[:repo_dir]
+      @force                   = options.fetch(:force, true)
+      @force_pristine_repo_dir = options.fetch(:force_pristine_repo_dir, false)
     end
 
     def push_app_to_bitbucket(remote = 'bitbucket', branch = 'master')
@@ -59,12 +60,29 @@ module GithubBitbucketDeployer
       repo.add_remote(remote, bitbucket_repo_url)
     end
 
+    def repo_dir_path
+      @repo_dir_name ||= File.join(repo_dir, Zlib.crc32(git_repo_name).to_s)
+    end
+
+    def update_working_copy
+      logger.info('update_working_copy')
+      begin
+        exists_locally? ? pull : clone
+      rescue => e
+        if force_pristine_repo_dir && !@already_forced_pristine_repo_dir
+          make_repo_dir_pristine
+          retry
+        else
+          raise e
+        end
+      end
+    end
+
     private
 
     def setup_folder
       logger.info('setup_folder')
-      folder = File.join(repo_dir, Zlib.crc32(git_repo_name).to_s)
-      FileUtils.mkdir_p(folder).first
+      FileUtils.mkdir_p(repo_dir_path).first
     end
 
     def setup_repo
@@ -73,9 +91,11 @@ module GithubBitbucketDeployer
       open
     end
 
-    def update_working_copy
-      logger.info('update_working_copy')
-      exists_locally? ? pull : clone
+    def make_repo_dir_pristine
+      logger.info('make_repo_dir_pristine')
+      @already_forced_pristine_repo_dir = true
+      @folder                           = nil
+      FileUtils.rm_rf(repo_dir_path)
     end
 
     def exists_locally?
