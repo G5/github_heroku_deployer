@@ -353,6 +353,17 @@ describe GithubBitbucketDeployer::Git do
         end
       end
     end
+
+    context 'when pull generates an index.lock related error' do
+      let(:error_message) { "Unable to create `/publish/repos/23424234/index.lock': File exists. Another git process seems to be running in this repository, e.g. an editor opened by 'git commit'. Please make sure all processes are terminated then try again. If it still fails, a git process may have crashed in this repository earlier: remove the file manually to continue." }
+      before do
+        allow(::Git).to receive(:clone).and_raise(::Git::GitExecuteError.new(error_message))
+      end
+
+      it 'raises GitRepoLockAlreadyHeldError' do
+        expect { subject }.to raise_error(GithubBitbucketDeployer::GitRepoLockAlreadyHeldError)
+      end
+    end
   end
 
   describe '#open', :fakefs do

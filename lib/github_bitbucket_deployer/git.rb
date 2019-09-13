@@ -5,16 +5,14 @@ require 'github_bitbucket_deployer/clone_logger_fix'
 
 module GithubBitbucketDeployer
   class Git
-    attr_reader :bitbucket_repo_url, :git_repo_name, :id_rsa, :repo_dir, :logger, :force, :force_pristine_repo_dir
+    attr_reader :bitbucket_repo_url, :git_repo_name, :id_rsa, :repo_dir, :logger,
+                :force, :force_pristine_repo_dir
 
-    def initialize(options)
-      @bitbucket_repo_url      = options[:bitbucket_repo_url]
-      @git_repo_name           = options[:git_repo_name]
-      @id_rsa                  = options[:id_rsa]
-      @logger                  = options[:logger]
-      @repo_dir                = options[:repo_dir]
-      @force                   = options.fetch(:force, true)
-      @force_pristine_repo_dir = options.fetch(:force_pristine_repo_dir, false)
+    def initialize(params)
+      params.keys.each do |key|
+        instance_variable_set("@#{key}", params[key])
+      end
+      @force = true if force.nil?
     end
 
     def push_app_to_bitbucket(remote = 'bitbucket', branch = 'master')
@@ -109,6 +107,7 @@ module GithubBitbucketDeployer
       end
     rescue ::Git::GitExecuteError => error
       logger.error(error)
+      raise GithubBitbucketDeployer::GitRepoLockAlreadyHeldError, error if error.message =~ /index\.lock/
       raise GithubBitbucketDeployer::CommandException, error
     end
 
