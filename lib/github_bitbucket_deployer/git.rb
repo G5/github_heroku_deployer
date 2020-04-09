@@ -5,23 +5,30 @@ require 'github_bitbucket_deployer/clone_logger_fix'
 
 module GithubBitbucketDeployer
   class Git
-    attr_reader :bitbucket_repo_url, :git_repo_name, :id_rsa, :repo_dir, :logger, :force, :force_pristine_repo_dir
+    attr_reader :bitbucket_repo_url, :git_repo_name, :id_rsa, :repo_dir, :logger,
+                :force, :force_pristine_repo_dir
 
-    def initialize(options)
-      @bitbucket_repo_url      = options[:bitbucket_repo_url]
-      @git_repo_name           = options[:git_repo_name]
-      @id_rsa                  = options[:id_rsa]
-      @logger                  = options[:logger]
-      @repo_dir                = options[:repo_dir]
-      @force                   = options.fetch(:force, true)
-      @force_pristine_repo_dir = options.fetch(:force_pristine_repo_dir, false)
+    def initialize(params)
+      params.keys.each do |key|
+        instance_variable_set("@#{key}", params[key])
+      end
+      @force = true if force.nil?
     end
 
     def push_app_to_bitbucket(remote = 'bitbucket', branch = 'master')
-      logger.info('push_app_to_bitbucket')
-      add_remote(remote)
-      with_ssh { yield(repo) } if block_given?
-      push(remote, branch)
+      begin
+        logger.info('push_app_to_bitbucket')
+        add_remote(remote)
+        with_ssh { yield(repo) } if block_given?
+        push(remote, branch)
+      rescue => e
+        if force_pristine_repo_dir && !@already_forced_pristine_repo_dir
+          make_repo_dir_pristine
+          retry
+        else
+          raise e
+        end
+      end
     end
 
     def repo
@@ -34,7 +41,7 @@ module GithubBitbucketDeployer
 
     def clone
       logger.info("git clone: cloning #{bitbucket_repo_url} to #{folder}")
-      run { ::Git.clone(bitbucket_repo_url, folder, log: logger) }
+      run { ::Git.clone(bitbucket_repo_url, folder, log: logger, depth: 1) }
     end
 
     def pull
@@ -66,16 +73,7 @@ module GithubBitbucketDeployer
 
     def update_working_copy
       logger.info('update_working_copy')
-      begin
-        exists_locally? ? pull : clone
-      rescue => e
-        if force_pristine_repo_dir && !@already_forced_pristine_repo_dir
-          make_repo_dir_pristine
-          retry
-        else
-          raise e
-        end
-      end
+      exists_locally? ? pull : clone
     end
 
     private
@@ -109,6 +107,7 @@ module GithubBitbucketDeployer
       end
     rescue ::Git::GitExecuteError => error
       logger.error(error)
+      raise GithubBitbucketDeployer::GitRepoLockAlreadyHeldError, error if error.message =~ /index\.lock/
       raise GithubBitbucketDeployer::CommandException, error
     end
 
