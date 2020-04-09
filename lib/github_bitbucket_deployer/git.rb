@@ -16,10 +16,19 @@ module GithubBitbucketDeployer
     end
 
     def push_app_to_bitbucket(remote = 'bitbucket', branch = 'master')
-      logger.info('push_app_to_bitbucket')
-      add_remote(remote)
-      with_ssh { yield(repo) } if block_given?
-      push(remote, branch)
+      begin
+        logger.info('push_app_to_bitbucket')
+        add_remote(remote)
+        with_ssh { yield(repo) } if block_given?
+        push(remote, branch)
+      rescue => e
+        if force_pristine_repo_dir && !@already_forced_pristine_repo_dir
+          make_repo_dir_pristine
+          retry
+        else
+          raise e
+        end
+      end
     end
 
     def repo
@@ -32,7 +41,7 @@ module GithubBitbucketDeployer
 
     def clone
       logger.info("git clone: cloning #{bitbucket_repo_url} to #{folder}")
-      run { ::Git.clone(bitbucket_repo_url, folder, log: logger) }
+      run { ::Git.clone(bitbucket_repo_url, folder, log: logger, depth: 1) }
     end
 
     def pull
@@ -64,16 +73,7 @@ module GithubBitbucketDeployer
 
     def update_working_copy
       logger.info('update_working_copy')
-      begin
-        exists_locally? ? pull : clone
-      rescue => e
-        if force_pristine_repo_dir && !@already_forced_pristine_repo_dir
-          make_repo_dir_pristine
-          retry
-        else
-          raise e
-        end
-      end
+      exists_locally? ? pull : clone
     end
 
     private
